@@ -5,10 +5,12 @@
   "main": "app.js",
   "scripts": {
     "test": "node --test scripts/test.cjs",
-    "build": "zeus build",
+    "build": "node scripts/patch-kpay.cjs && zeus build",
     "preview": "zeus preview",
     "qr": "node scripts/make-qr.cjs",
-    "check": "node scripts/release-notes.cjs"
+    "check": "node scripts/release-notes.cjs",
+    "postinstall": "node scripts/patch-kpay.cjs",
+    "patch": "node scripts/patch-kpay.cjs"
   },
   "author": "",
   "license": "MIT",

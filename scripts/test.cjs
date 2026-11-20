@@ -411,3 +411,25 @@ test('kpay: the shipped build is not in test mode', () => {
     assert.doesNotMatch(src, /testMode:\s*true/, f.join('/') + ' must not ship in KiezelPay test mode')
   }
 })
+
+// --- KiezelPay SDK patch ---------------------------------------------------
+// The round-screen dialog layout lives in a patch to node_modules, which a
+// dependency reinstall wipes. These make sure it is present before a build and
+// that the patch script can be re-run safely.
+
+test('kpay patch: the installed SDK carries the round-screen layout', () => {
+  const { TARGET, MARKER } = require('./patch-kpay.cjs')
+  if (!fs.existsSync(TARGET)) return // dependency not installed here
+  assert.ok(
+    fs.readFileSync(TARGET, 'utf8').includes(MARKER),
+    'run `npm run patch` (or npm install): the payment dialog is laid out for a phone screen'
+  )
+})
+
+test('kpay patch: re-running it is a no-op', () => {
+  const { TARGET, main } = require('./patch-kpay.cjs')
+  if (!fs.existsSync(TARGET)) return
+  const before = fs.readFileSync(TARGET, 'utf8')
+  assert.equal(main(), 0)
+  assert.equal(fs.readFileSync(TARGET, 'utf8'), before, 'patching twice must not change the SDK')
+})
