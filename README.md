@@ -127,9 +127,9 @@ When you cut a new version, bump `app.version.code` and `app.version.name` in
 this README should carry. That script reads `app.json` rather than trusting these
 words, so the README can be checked instead of hoped for.
 
-## Support (KiezelPay)
+## Support screen
 
-The fifth screen is a support page: Tempest stays free, and a donation is a thank-you rather than an unlock. KiezelPay product id `1477462642` lives in `shared/kpay-config.js` with `testMode: false`, which is the store configuration — a test build would accept codes at kzl.io/code without charging. The buyer sees a payment code on the watch, pays at kzl.io/code, and the phone-side library polls until it clears.
+The fifth screen is a static thank-you: Tempest is free, nothing is locked, and there is no payment code in the app. KiezelPay was removed in v2.0.0.
 The SDK lays its payment dialog out for a phone-shaped screen, so its lower lines
 fall outside a round 480 watch. `scripts/patch-kpay.cjs` replaces that one method
 with a round-screen layout; it runs on `npm install` (postinstall) and before every
