@@ -1,0 +1,59 @@
+msgid "title"
+msgstr "Tempest weather station"
+
+msgid "intro"
+msgstr "Enter the station ID of your own Tempest. The watch app shows temperature, humidity, wind, pressure and rain straight from your backyard."
+
+msgid "stationId"
+msgstr "Station ID"
+
+msgid "tokenOptional"
+msgstr "Personal access token (optional)"
+
+msgid "whereToFind"
+msgstr "Find the ID at tempestwx.com > Settings > Stations. The token is optional: create one under Settings > Data Authorizations if you want the app to identify your account."
+
+msgid "units"
+msgstr "Units"
+
+msgid "unitsImperial"
+msgstr "Imperial (F, mph, inHg, in)"
+
+msgid "unitsMetric"
+msgstr "Metric (C, m/s, hPa, mm)"
+
+msgid "savedStation"
+msgstr "Saved. Station ID:"
+
+msgid "notSetYet"
+msgstr "No station saved yet."
+
+msgid "test"
+msgstr "Test connection"
+
+msgid "testing"
+msgstr "Checking with Tempest..."
+
+msgid "enterIdFirst"
+msgstr "Enter a station ID first."
+
+msgid "okPrefix"
+msgstr "Connected:"
+
+msgid "errAuth"
+msgstr "Tempest rejected the token. Remove it or create a new one."
+
+msgid "errNotFound"
+msgstr "That station ID was not found. Check the digits."
+
+msgid "errNoData"
+msgstr "The station answered but has no reading yet. Is the Tempest online?"
+
+msgid "errNetwork"
+msgstr "Could not reach Tempest. Check the phone's connection."
+
+msgid "howToRead"
+msgstr "On the watch: the big number is the current temperature. Use < and > to see wind, air (humidity, dew point, pressure) and sun/rain. The middle button fetches again."
+
+msgid "swipeHint"
+msgstr "Pull down on the watch app to refresh, or open the app again."

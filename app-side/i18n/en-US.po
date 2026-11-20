@@ -1,0 +1,2 @@
+msgid "tempest"
+msgstr "Tempest"
