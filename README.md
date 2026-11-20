@@ -130,8 +130,3 @@ words, so the README can be checked instead of hoped for.
 ## Support screen
 
 The fifth screen is a static thank-you: Tempest is free, nothing is locked, and there is no payment code in the app. KiezelPay was removed in v2.0.0.
-The SDK lays its payment dialog out for a phone-shaped screen, so its lower lines
-fall outside a round 480 watch. `scripts/patch-kpay.cjs` replaces that one method
-with a round-screen layout; it runs on `npm install` (postinstall) and before every
-`npm run build`, is safe to re-run, and a test fails if it is missing.
-`npm run patch` applies it by hand.
