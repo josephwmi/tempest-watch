@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tempest for Amazfit Balance 2 — app preview</title>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #131a22;
+    --line: #253140;
+    --text: #e8edf4;
+    --dim: #8a94a6;
+    --accent: #4dd0e1;
+    --btn: #1b2430;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at 50% -10%, #16202b 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 44px 24px 70px;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  /* ---- header ---- */
+  header { display: flex; gap: 22px; align-items: center; margin-bottom: 40px; }
+  header img.icon {
+    width: 96px; height: 96px; flex: 0 0 96px;
+    /* light ring so the transparent corners read as transparent */
+    background:
+      linear-gradient(45deg, #1e2732 25%, transparent 25%, transparent 75%, #1e2732 75%) 0 0/16px 16px,
+      linear-gradient(45deg, #1e2732 25%, #18202a 25%, #18202a 75%, #1e2732 75%) 8px 8px/16px 16px;
+    border-radius: 12px;
+  }
+  h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  header p { margin: 0; color: var(--dim); font-size: 14px; line-height: 1.55; }
+  header p b { color: #c9d3e0; font-weight: 600; }
+
+  h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--dim); font-weight: 600; margin: 0 0 18px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--line);
+  }
+  section { margin-bottom: 42px; }
+
+  /* ---- watch face: 480 design px shown at 260px (x0.5417) ---- */
+  .screens { display: flex; flex-wrap: wrap; gap: 26px; }
+  .screen { width: 260px; }
+  .watch {
+    width: 260px; height: 260px; border-radius: 50%; background: #000;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 0 8px #0f141a, 0 0 0 10px #2b3742, 0 18px 44px rgba(0,0,0,.6);
+  }
+  .watch > div { position: absolute; text-align: center; white-space: pre-line; line-height: 1.15; }
+  .cap { margin-top: 13px; font-size: 12.5px; color: var(--dim); line-height: 1.45; }
+  .cap b { display: block; color: var(--text); font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+
+  .w-title { color: var(--dim); font-size: 11.9px; left: 21.7px; width: 216.7px; }
+  .w-cond { color: var(--accent); font-size: 11.9px; left: 21.7px; width: 216.7px; }
+  .w-big { color: #fff; font-weight: 300; letter-spacing: -0.02em; }
+  .w-line { color: #fff; }
+  .w-btn {
+    background: var(--btn); border-radius: 25.2px; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    height: 31.4px; width: 81.2px;
+  }
+  .w-dot { width: 3.3px; height: 3.3px; border-radius: 50%; background: var(--btn); }
+
+  /* ---- phone settings: the Zepp app's own page, 1:1 ---- */
+  .phone {
+    width: 300px; background: #f5f7fa; border-radius: 22px; padding: 14px;
+    color: #1a1a1a; font-size: 13px; box-shadow: 0 18px 44px rgba(0,0,0,.5);
+  }
+  .card {
+    background: #fff; border: 1px solid #e3e7ee; border-radius: 10px;
+    padding: 13px 14px; margin-bottom: 11px;
+  }
+  .card h3 { font-size: 15px; margin: 0 0 6px; }
+  .hint { font-size: 11.5px; color: #7a8494; line-height: 17px; margin: 5px 0 0; }
+  .field { border-bottom: 1px solid #e6eaf0; padding: 7px 0 5px; }
+  .field span { font-size: 10.5px; color: #7a8494; display: block; }
+  .field b { font-weight: 400; font-size: 14px; color: #1a1a1a; }
+  .cta {
+    margin-top: 11px; background: #0d7ea8; color: #fff; text-align: center;
+    border-radius: 22px; padding: 9px 0; font-size: 13px;
+  }
+  .ok { color: #2f6f4f; font-size: 12px; margin-top: 9px; }
+
+  /* ---- the rest ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th { color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; }
+  td code { background: rgba(255,255,255,.07); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+
+  .note {
+    background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; padding: 16px 20px; font-size: 13px; line-height: 1.65; color: #b9c4d2;
+  }
+  .note ul { margin: 6px 0 0; padding-left: 20px; }
+  .note li { margin-bottom: 5px; }
+  .row2 { display: flex; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
+  .row2 > div { flex: 1 1 320px; }
+
+  footer { margin-top: 40px; color: #6b7787; font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <img class="icon" src="assets/default.r/icon.png" alt="Tempest app icon" width="96" height="96">
+    <div>
+      <h1>Tempest — Amazfit Balance 2</h1>
+      <p>
+        Live conditions from a WeatherFlow Tempest station, on your wrist.
+        <b>Round 480 × 480 AMOLED</b>, Zepp OS 5, version 1.5.0.
+        The watch has no internet: the phone fetches, the watch draws.
+      </p>
+    </div>
+  </header>
+
+  <section>
+    <h2>The four screens</h2>
+    <div class="screens">
+
+      <div class="screen">
+        <div class="watch">
+          <div class="w-title" style="top:20.6px">Backyard</div>
+          <div class="w-cond" style="top:37.9px">Daylight · 12s ago</div>
+          <div class="w-big" style="top:52px;left:16.3px;width:227.5px;height:65px;line-height:65px;font-size:49.8px">24°C</div>
+          <div class="w-line" style="top:115.9px;left:21.7px;width:216.7px;font-size:13px;color:var(--dim)">Feels 25°C · Pleasant</div>
+          <div class="w-btn" style="left:16.3px;top:160.3px">‹</div>
+          <div class="w-btn" style="left:89.4px;top:160.3px">↻</div>
+          <div class="w-btn" style="left:162.5px;top:160.3px">›</div>
+          <div class="w-dot" style="left:97px;top:207.9px;background:var(--accent)"></div>
+          <div class="w-dot" style="left:106.7px;top:207.9px"></div>
+          <div class="w-dot" style="left:116.4px;top:207.9px"></div>
+          <div class="w-dot" style="left:126.1px;top:207.9px"></div>
+        </div>
+        <div class="cap"><b>1 · Temperature</b>What you leave it on. Condition is derived: sunlight, rain, lightning.</div>
+      </div>
+
+      <div class="screen">
+        <div class="watch">
+          <div class="w-title" style="top:20.6px">Backyard</div>
+          <div class="w-cond" style="top:37.9px">Daylight · 12s ago</div>
+          <div class="w-big" style="top:59.6px;left:16.3px;width:227.5px;height:43.3px;line-height:43.3px;font-size:33.6px">3.4 m/s</div>
+          <div class="w-line" style="top:100.7px;left:21.7px;width:216.7px;font-size:15.2px;color:var(--accent)">NW  315°</div>
+          <div class="w-line" style="top:120.2px;left:21.7px;width:216.7px;font-size:13px;color:var(--dim)">Gust 5.1 m/s</div>
+          <div class="w-btn" style="left:16.3px;top:160.3px">‹</div>
+          <div class="w-btn" style="left:89.4px;top:160.3px">↻</div>
+          <div class="w-btn" style="left:162.5px;top:160.3px">›</div>
+          <div class="w-dot" style="left:97px;top:207.9px"></div>
+          <div class="w-dot" style="left:106.7px;top:207.9px;background:var(--accent)"></div>
+          <div class="w-dot" style="left:116.4px;top:207.9px"></div>
+          <div class="w-dot" style="left:126.1px;top:207.9px"></div>
+        </div>
+        <div class="cap"><b>2 · Wind</b>Average, compass direction with degrees, and the gust.</div>
+      </div>
+
+      <div class="screen">
+        <div class="watch">
+          <div class="w-title" style="top:20.6px">Backyard</div>
+          <div class="w-cond" style="top:37.9px">Daylight · 12s ago</div>
+          <div class="w-big" style="top:59.6px;left:16.3px;width:227.5px;height:43.3px;line-height:43.3px;font-size:33.6px">58%</div>
+          <div class="w-line" style="top:100.7px;left:21.7px;width:216.7px;font-size:15.2px;color:var(--accent)">Dew point 15°C</div>
+          <div class="w-line" style="top:120.2px;left:21.7px;width:216.7px;font-size:13px;color:var(--dim)">1013.2 hPa  ↗</div>
+          <div class="w-btn" style="left:16.3px;top:160.3px">‹</div>
+          <div class="w-btn" style="left:89.4px;top:160.3px">↻</div>
+          <div class="w-btn" style="left:162.5px;top:160.3px">›</div>
+          <div class="w-dot" style="left:97px;top:207.9px"></div>
+          <div class="w-dot" style="left:106.7px;top:207.9px"></div>
+          <div class="w-dot" style="left:116.4px;top:207.9px;background:var(--accent)"></div>
+          <div class="w-dot" style="left:126.1px;top:207.9px"></div>
+        </div>
+        <div class="cap"><b>3 · Air</b>Humidity, dew point, pressure with its rising or falling arrow.</div>
+      </div>
+
+      <div class="screen">
+        <div class="watch">
+          <div class="w-title" style="top:20.6px">Backyard</div>
+          <div class="w-cond" style="top:37.9px">Daylight · 12s ago</div>
+          <div class="w-big" style="top:59.6px;left:16.3px;width:227.5px;height:43.3px;line-height:43.3px;font-size:33.6px">UV 6</div>
+          <div class="w-line" style="top:100.7px;left:21.7px;width:216.7px;font-size:15.2px;color:var(--accent)">Rain today 2.4 mm</div>
+          <div class="w-line" style="top:120.2px;left:21.7px;width:216.7px;font-size:13px;color:var(--dim)">Solar 486 W/m²</div>
+          <div class="w-btn" style="left:16.3px;top:160.3px">‹</div>
+          <div class="w-btn" style="left:89.4px;top:160.3px">↻</div>
+          <div class="w-btn" style="left:162.5px;top:160.3px">›</div>
+          <div class="w-dot" style="left:97px;top:207.9px"></div>
+          <div class="w-dot" style="left:106.7px;top:207.9px"></div>
+          <div class="w-dot" style="left:116.4px;top:207.9px"></div>
+          <div class="w-dot" style="left:126.1px;top:207.9px;background:var(--accent)"></div>
+        </div>
+        <div class="cap"><b>4 · Sun, rain, lightning</b>The last line becomes a strike count during a storm.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>States you will actually see</h2>
+    <div class="screens">
+
+      <div class="screen">
+        <div class="watch">
+          <div class="w-title" style="top:20.6px">Tempest</div>
+          <div class="w-line" style="top:52px;left:27.1px;width:205.8px;font-size:14px">No station set.
+Open Zepp › Profile › Tempest
+and enter your station ID.</div>
+        </div>
+        <div class="cap"><b>First run</b>Plain words instead of a blank screen.</div>
+      </div>
+
+      <div class="screen">
+        <div class="watch">
+          <div class="w-title" style="top:20.6px">Backyard</div>
+          <div class="w-cond" style="top:37.9px">Thunderstorm · 8s ago</div>
+          <div class="w-big" style="top:52px;left:16.3px;width:227.5px;height:65px;line-height:65px;font-size:49.8px">21°C</div>
+          <div class="w-line" style="top:115.9px;left:21.7px;width:216.7px;font-size:13px;color:var(--dim)">Feels 22°C · Stay in</div>
+          <div class="w-btn" style="left:16.3px;top:160.3px">‹</div>
+          <div class="w-btn" style="left:89.4px;top:160.3px">↻</div>
+          <div class="w-btn" style="left:162.5px;top:160.3px">›</div>
+          <div class="w-dot" style="left:97px;top:207.9px;background:var(--accent)"></div>
+          <div class="w-dot" style="left:106.7px;top:207.9px"></div>
+          <div class="w-dot" style="left:116.4px;top:207.9px"></div>
+          <div class="w-dot" style="left:126.1px;top:207.9px"></div>
+        </div>
+        <div class="cap"><b>Storm</b>Lightning in the last hour overrides condition and comfort word.</div>
+      </div>
+
+      <div class="screen">
+        <div class="watch">
+          <div class="w-title" style="top:20.6px">Backyard</div>
+          <div class="w-cond" style="top:37.9px">Daylight · 12s ago</div>
+          <div class="w-big" style="top:52px;left:16.3px;width:227.5px;height:65px;line-height:65px;font-size:49.8px">75°F</div>
+          <div class="w-line" style="top:115.9px;left:21.7px;width:216.7px;font-size:13px;color:var(--dim)">Feels 77°F · Pleasant</div>
+          <div class="w-btn" style="left:16.3px;top:160.3px">‹</div>
+          <div class="w-btn" style="left:89.4px;top:160.3px">↻</div>
+          <div class="w-btn" style="left:162.5px;top:160.3px">›</div>
+          <div class="w-dot" style="left:97px;top:207.9px;background:var(--accent)"></div>
+          <div class="w-dot" style="left:106.7px;top:207.9px"></div>
+          <div class="w-dot" style="left:116.4px;top:207.9px"></div>
+          <div class="w-dot" style="left:126.1px;top:207.9px"></div>
+        </div>
+        <div class="cap"><b>Imperial</b>°F, mph, inHg, inches — set on the phone.</div>
+      </div>
+
+      <div class="screen">
+        <div class="phone">
+          <div class="card">
+            <h3>Tempest weather station</h3>
+            <p class="hint" style="margin:0">Enter the station ID of your own Tempest.</p>
+            <div class="field"><span>Station ID</span><b>12345</b></div>
+            <div class="field"><span>Personal access token (optional)</span><b>&nbsp;</b></div>
+          </div>
+          <div class="card">
+            <div class="field" style="border:0;padding-top:0"><span>Units</span><b>Metric (C, m/s, hPa, mm)</b></div>
+          </div>
+          <div class="card">
+            <div class="cta">Test connection</div>
+            <p class="ok">Connected: Backyard — 24°C, 78% RH</p>
+          </div>
+        </div>
+        <div class="cap"><b>Phone settings</b>What Test connection reports once the station answers.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>What it shows</h2>
+    <div class="row2">
+      <div>
+        <table>
+          <tr><th>Field</th><th>Source</th></tr>
+          <tr><td>Temperature, feels-like</td><td><code>air_temperature</code>, <code>feels_like</code></td></tr>
+          <tr><td>Humidity, dew point</td><td><code>relative_humidity</code>, <code>dew_point</code></td></tr>
+          <tr><td>Wind, gust, direction</td><td><code>wind_avg</code>, <code>wind_gust</code>, <code>wind_direction</code></td></tr>
+          <tr><td>Pressure + trend</td><td><code>sea_level_pressure</code>, <code>pressure_trend</code></td></tr>
+          <tr><td>UV, solar</td><td><code>uv</code>, <code>solar_radiation</code></td></tr>
+          <tr><td>Rain today</td><td><code>precip_accum_local_day</code></td></tr>
+          <tr><td>Lightning</td><td><code>lightning_strike_count_last_1hr</code></td></tr>
+        </table>
+      </div>
+      <div class="note">
+        <strong>How it is built</strong>
+        <ul>
+          <li>The watch has no internet. Every HTTP call happens in the phone's side service; the watch asks for a mapped view model.</li>
+          <li>Readings are cached for 60 seconds, so opening the app is instant and a dropped connection shows the last good numbers with their age rather than an empty screen.</li>
+          <li>Tempest returns SI units only, so conversion to °F/mph/inHg happens in <code>utils/format.js</code>, which is unit tested.</li>
+          <li>There is no sky-condition text in the API, so the one-line condition is derived from rain, lightning and sunlight — and says which.</li>
+          <li>Sample values throughout this page; on your wrist they are your station's.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>Tempest for Zepp OS · github.com/josephwmi/tempest-watch</footer>
+
+</div>
+</body>
+</html>

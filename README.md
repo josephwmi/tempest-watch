@@ -1,7 +1,7 @@
 # Tempest for Zepp OS (Amazfit)
 
-[![version](https://img.shields.io/badge/version-1.5.0-0d7ea8)](#)
-[![release](https://img.shields.io/badge/release-v1.5.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
+[![version](https://img.shields.io/badge/version-1.6.0-0d7ea8)](#)
+[![release](https://img.shields.io/badge/release-v1.6.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
 [![platform](https://img.shields.io/badge/Amazfit%20Balance%202-Zepp%20OS%205-4dd0e1)](#)
 
 A watch app that shows live conditions from your own **WeatherFlow Tempest**
@@ -54,8 +54,8 @@ which one you are on.
 
 The package is published as a public GitHub release, so there is nothing to host:
 
-- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.5.0>
-- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.5.0/tempest-watch-balance2.zab>
+- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.6.0>
+- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.6.0/tempest-watch-balance2.zab>
 - QR: `docs/install-qr.png`
 
 Zepp app › Profile › your Balance 2 › Developer Mode › QR scanner, and scan that
@@ -88,7 +88,7 @@ The short version: turn on developer mode (seven taps on the Zepp logo), put the
 ```bash
 npm install
 npm test          # 14 tests over the mapping, side service and settings page
-npx zeus build    # writes dist/1034242-Tempest-1.4.0-<timestamp>.zab
+npx zeus build    # writes dist/1137328-Tempest-1.6.0-<timestamp>.zab
 ```
 
 Install on the watch, either way:
@@ -108,8 +108,9 @@ Target: **Amazfit Balance 2** — round 480 x 480 AMOLED, Zepp OS 5.0, API level
   the conversion itself.
 - The observation endpoint has no sky-condition text ("partly cloudy"), so the
   one-line condition at the top is derived from rain, lightning, solar and UV.
-- App ID `1034242` is in Zepp's public range but is not registered in the Zepp
-  developer console; change it in `app.json` if you publish this yourself.
+- App ID `1137328` is the app ID registered in the Zepp developer console; the package,
+  the console entry and this README must always agree. Change it in one place
+  only — `app.json` — and rebuild.
 - This is a personal-use client. WeatherFlow's remote data access policy expects
   third-party apps to read the station owner's own data; if you ever publish it
   for other people's stations, use their OAuth flow instead of a personal token.
@@ -118,7 +119,7 @@ Target: **Amazfit Balance 2** — round 480 x 480 AMOLED, Zepp OS 5.0, API level
 
 ## Version and release
 
-Current version: **1.5.0** (`app.version` in `app.json`).
+Current version: **1.6.0** (`app.version` in `app.json`).
 Latest release: <https://github.com/josephwmi/tempest-watch/releases/latest>
 
 When you cut a new version, bump `app.version.code` and `app.version.name` in

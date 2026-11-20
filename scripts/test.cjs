@@ -320,3 +320,19 @@ test('side service: GET_PENDING_TEST does nothing when nothing is parked', async
   })
   assert.equal(data.pending, false)
 })
+
+// --- package identity ----------------------------------------------------
+// The store rejects a package whose appId differs from the console entry, and
+// the README and manifest have drifted before. This pins them together.
+
+test('app.json: appId matches the registered console app', () => {
+  const app = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
+  assert.equal(app.app.appId, 1137328, 'appId must match the Zepp console entry')
+})
+
+test('app.json: version code and name are consistent', () => {
+  const app = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
+  assert.match(app.app.version.name, /^\d+\.\d+\.\d+$/)
+  assert.equal(typeof app.app.version.code, 'number')
+  assert.ok(app.app.version.code >= 1)
+})
