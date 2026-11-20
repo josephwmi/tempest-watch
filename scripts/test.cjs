@@ -153,7 +153,7 @@ function loadSideService(responseFactory) {
       'export const settingsLib = globalThis.__settings\n'
   )
   // Node needs the '.js' extension in relative imports, so add it while copying.
-  for (const sub of ['utils', 'app-side']) {
+  for (const sub of ['utils', 'app-side', 'shared']) {
     fs.mkdirSync(path.join(dir, sub), { recursive: true })
     for (const f of fs.readdirSync(path.join(ROOT, sub))) {
       if (!f.endsWith('.js')) continue
@@ -164,6 +164,40 @@ function loadSideService(responseFactory) {
       )
     }
   }
+  // KiezelPay's SDK is a real dependency of the side service; point the temp
+  // copy at this project's node_modules instead of installing it again.
+  const kpay = path.join(ROOT, 'node_modules', 'kpay-amazfit')
+  if (fs.existsSync(kpay)) {
+    fs.mkdirSync(path.join(dir, 'node_modules'), { recursive: true })
+    const kdir = path.join(dir, 'node_modules', 'kpay-amazfit')
+    fs.mkdirSync(kdir, { recursive: true })
+    fs.writeFileSync(
+      path.join(kdir, 'package.json'),
+      JSON.stringify({
+        name: 'kpay-amazfit',
+        type: 'module',
+        exports: { './app': './app/index.js', './app-side': './app-side/index.js' }
+      })
+    )
+    // Node wants the extension on relative imports; the SDK omits it.
+    const addExt = (d) => {
+      for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
+        const full = path.join(d, entry.name)
+        if (entry.isDirectory()) addExt(full)
+        else if (entry.name.endsWith('.js')) {
+          const src = fs.readFileSync(full, 'utf8').replace(/from '(\.[^']+)'/g, function (m, p) {
+            return /[.]js$/.test(p) ? m : "from '" + p + ".js'"
+          })
+          fs.writeFileSync(full, src)
+        }
+      }
+    }
+    for (const sub of ['app', 'app-side', 'shared', 'utils', 'i18n']) {
+      fs.cpSync(path.join(kpay, sub), path.join(kdir, sub), { recursive: true })
+      addExt(path.join(kdir, sub))
+    }
+  }
+
   // package.json so Node treats the copies as ESM
   fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ type: 'module' }))
 
@@ -335,4 +369,45 @@ test('app.json: version code and name are consistent', () => {
   assert.match(app.app.version.name, /^\d+\.\d+\.\d+$/)
   assert.equal(typeof app.app.version.code, 'number')
   assert.ok(app.app.version.code >= 1)
+})
+
+// --- KiezelPay wiring ------------------------------------------------------
+// The payment SDK is invisible when it is mis-wired: the build succeeds and the
+// support page simply does nothing. These pin the three joins that failed
+// silently during development.
+
+test('kpay: both halves carry the product id', () => {
+  const ID = '1477462642'
+  const side = fs.readFileSync(path.join(ROOT, 'app-side', 'index.js'), 'utf8')
+  const watch = fs.readFileSync(path.join(ROOT, 'page', 'support', 'kpay.js'), 'utf8')
+  assert.ok(side.includes(ID), 'the side service must know the KiezelPay product id')
+  assert.ok(watch.includes(ID), 'the support page must know the KiezelPay product id')
+})
+
+test('app.json: the support page is registered', () => {
+  const app = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
+  const pages = app.targets.default.module.page.pages
+  assert.ok(pages.includes('page/support/index'), 'page/support/index must be in pages')
+})
+
+test('side service: KiezelPay messages are routed to the SDK', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'app-side', 'index.js'), 'utf8')
+  assert.match(src, /kpay-amazfit\/app-side/, 'the side service must import the SDK')
+  assert.match(src, /KPAY_/, 'KPAY_ messages must be recognised')
+})
+
+test('support page: the SDK is imported, not require()d', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'page', 'support', 'kpay.js'), 'utf8')
+  assert.ok(!/^\s*const .*require\(/m.test(src), 'a require() of the SDK is tree-shaken away by the bundler')
+  assert.match(src, /import KpayApp from 'kpay-amazfit\/app'/, 'the watch half must import the SDK')
+})
+
+// The store package must not carry test mode: kzl.io/code would accept codes
+// without charging, and the donation would silently never arrive.
+test('kpay: the shipped build is not in test mode', () => {
+  for (const f of [['app-side', 'index.js'], ['page', 'support', 'kpay.js']]) {
+    const src = fs.readFileSync(path.join(ROOT, ...f), 'utf8')
+    if (!src.includes('testMode')) continue
+    assert.doesNotMatch(src, /testMode:\s*true/, f.join('/') + ' must not ship in KiezelPay test mode')
+  }
 })

@@ -18,3 +18,19 @@ export const RETRY_BTN = {
   press_color: '#26a69a',
   text: 'Try again'
 }
+
+// Fifth screen: the support / donation page. It reuses the row of buttons at
+// BTN_Y, so only the text block above it needs measuring.
+export const SUPPORT = {
+  title_y: 66,
+  title_font: 26,
+  body_y: 104,
+  body_h: 150,
+  body_font: 22,
+  cta_x: 90,
+  cta_y: 268,
+  cta_w: 300,
+  cta_h: 70,
+  cta_font: 26,
+  cta_radius: 35
+}
