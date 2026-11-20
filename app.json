@@ -1,12 +1,12 @@
 {
   "configVersion": "v3",
   "app": {
-    "appId": 1034241,
+    "appId": 1034242,
     "appName": "Tempest",
     "appType": "app",
     "version": {
-      "code": 3,
-      "name": "1.2.0"
+      "code": 5,
+      "name": "1.4.0"
     },
     "icon": "icon.png",
     "vender": "tempest-watch",

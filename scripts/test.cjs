@@ -252,3 +252,38 @@ test('side service: network failure keeps the last reading as stale', async () =
   assert.equal(data.error, 'NETWORK')
   assert.equal(data.stale.temp, 20)
 })
+
+// --- settings page test button -------------------------------------------
+// The settings page cannot be relied on for HTTP, so the button hands the job
+// to the side service. These two tests pin that contract down.
+
+test('side service: TEST_CONNECTION returns a human line on success', async () => {
+  await loadSideService(async () => ({ status: 200, body: JSON.stringify(SAMPLE) }))
+  const data = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest(
+      { method: 'TEST_CONNECTION', params: { stationId: '12345', token: 'abc' } },
+      (err, d) => resolve(d)
+    )
+  })
+  assert.equal(data.ok, true)
+  assert.match(data.message, /^Connected: Backyard/)
+})
+
+test('side service: TEST_CONNECTION reports a bad station without throwing', async () => {
+  await loadSideService(async () => ({ status: 404, body: '{}' }))
+  const data = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest(
+      { method: 'TEST_CONNECTION', params: { stationId: '99999' } },
+      (err, d) => resolve(d)
+    )
+  })
+  assert.equal(data.ok, false)
+  assert.equal(data.error, 'BAD_STATION')
+  assert.ok(data.message.length > 0)
+})
+
+test('settings page: the button asks the side service, it does not fetch itself', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'setting/index.js'), 'utf8')
+  assert.ok(src.includes("method: 'TEST_CONNECTION'"), 'asks the side service')
+  assert.ok(!/fetch\(/.test(src), 'no direct fetch in the settings page')
+})

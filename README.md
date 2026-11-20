@@ -59,6 +59,9 @@ image. Full walkthrough: **[docs/INSTALL.md](docs/INSTALL.md)**.
 
 ## Install on the watch
 
+If the QR scanner refuses the package, use **[docs/INSTALL-ALT.md](docs/INSTALL-ALT.md)**
+(Bluetooth via `npx zeus preview`).
+
 Step-by-step, including the QR code: **[docs/INSTALL.md](docs/INSTALL.md)**.
 The short version: turn on developer mode (seven taps on the Zepp logo), put the
 `.zab` at a public https URL, `node scripts/make-qr.cjs <that URL>`, then scan

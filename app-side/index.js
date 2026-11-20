@@ -141,6 +141,38 @@ function getWeather(res, force) {
   })
 }
 
+// The settings page asks for a check; this is the only place on the phone that
+// does HTTP, so the test uses exactly the code path the watch uses.
+function testConnection(res, params) {
+  const cfg = normalizeConfig({
+    stationId: params && params.stationId,
+    token: params && params.token
+  })
+  if (!isConfigured(cfg)) {
+    res(null, { ok: false, message: 'Enter a station ID first.' })
+    return
+  }
+  fetchObservation(cfg).then(function (result) {
+    if (!result.ok) {
+      res(null, { ok: false, error: result.error, message: result.message })
+      return
+    }
+    const view = toViewModel(result.payload, cfg)
+    if (!view) {
+      res(null, { ok: false, message: 'The station answered but the reading was empty.' })
+      return
+    }
+    const t = view.temp === null ? '--' : Math.round(view.temp) + view.tempUnit
+    res(null, {
+      ok: true,
+      stationName: view.stationName || cfg.stationId,
+      message:
+        'Connected: ' + (view.stationName || cfg.stationId) + ' \u2014 ' + t + ', ' +
+        (view.humidity === null ? '--' : view.humidity + '% RH')
+    })
+  })
+}
+
 function getConfig(res) {
   res(null, { config: readConfig() })
 }
@@ -153,6 +185,8 @@ AppSideService(
         getWeather(res, req.params && req.params.force)
       } else if (req.method === 'GET_CONFIG') {
         getConfig(res)
+      } else if (req.method === 'TEST_CONNECTION') {
+        testConnection(res, req.params)
       } else {
         res({ message: 'unknown method ' + req.method })
       }

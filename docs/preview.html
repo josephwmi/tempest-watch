@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tempest — Amazfit Balance 2 preview</title>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --face: #000000;
+    --text: #ffffff;
+    --dim: #8a94a6;
+    --accent: #4dd0e1;
+    --btn: #1b2430;
+    --warn: #ffb74d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at 50% 0%, #16202b 0%, var(--bg) 60%);
+    color: #e8edf4;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 40px 24px 64px;
+  }
+  header { max-width: 1180px; margin: 0 auto 34px; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--dim); font-size: 14px; line-height: 1.5; }
+  header p b { color: #c9d3e0; font-weight: 600; }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 34px;
+    justify-content: center;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  figure { margin: 0; width: 300px; }
+  figcaption {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.45;
+    min-height: 38px;
+  }
+  figcaption b { color: #e8edf4; font-weight: 600; display: block; font-size: 14px; }
+
+  /* The watch face: 480 x 480 design px scaled to 300 px */
+  .watch {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: var(--face);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 0 10px #11161d, 0 0 0 12px #2b3742, 0 22px 50px rgba(0,0,0,.55);
+    font-family: "Segoe UI", Roboto, system-ui, sans-serif;
+  }
+  .watch > * { position: absolute; }
+  /* 480 -> 300 : multiply design px by 0.625 */
+  .s { transform-origin: top left; }
+
+  .title, .cond, .big, .line, .status {
+    text-align: center;
+    white-space: pre-line;
+    line-height: 1.15;
+  }
+  .title { color: var(--dim); font-size: 13.75px; left: 25px; width: 250px; top: 23.75px; }
+  .cond  { color: var(--accent); font-size: 13.75px; left: 25px; width: 250px; top: 43.75px; }
+  .big   { color: var(--text); font-weight: 300; letter-spacing: -0.02em; }
+  .line  { font-weight: 400; }
+
+  .btn {
+    border-radius: 29px;
+    background: var(--btn);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16.25px;
+    height: 36.25px;
+  }
+  .dot { width: 3.75px; height: 3.75px; border-radius: 50%; background: var(--btn); }
+  .dot.on { background: var(--accent); }
+
+  .note {
+    max-width: 1180px;
+    margin: 46px auto 0;
+    padding: 18px 22px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #b9c4d2;
+  }
+  .note h2 { font-size: 14px; margin: 0 0 8px; color: #e8edf4; font-weight: 600; }
+  .note code {
+    background: rgba(255,255,255,.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+  .note ul { margin: 8px 0 0; padding-left: 20px; }
+  .note li { margin-bottom: 5px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Tempest on an Amazfit Balance 2</h1>
+  <p>
+    Drawn at the watch's real layout: <b>480 × 480 round AMOLED</b>, every position and font size
+    taken straight from <code>page/index.js</code> and scaled to fit this page. Sample reading from a
+    typical backyard station — your own numbers will differ.
+  </p>
+</header>
+
+<div class="row">
+
+  <!-- PAGE 1 — temperature -->
+  <figure>
+    <div class="watch">
+      <div class="title" style="top:24px">Backyard</div>
+      <div class="cond" style="top:44px">Daylight · 12s ago</div>
+      <div class="big" style="top:60px;left:19px;width:262px;height:75px;line-height:75px;font-size:57.5px">24°C</div>
+      <div class="line" style="top:134px;left:25px;width:250px;font-size:15px;color:var(--dim)">Feels 25°C · Pleasant</div>
+      <div class="btn" style="left:19px;top:185px;width:94px">‹</div>
+      <div class="btn" style="left:94px;top:185px;width:94px">↻</div>
+      <div class="btn" style="left:169px;top:185px;width:94px">›</div>
+      <div class="dot on" style="left:112px;top:240px"></div>
+      <div class="dot" style="left:123px;top:240px"></div>
+      <div class="dot" style="left:134px;top:240px"></div>
+      <div class="dot" style="left:145px;top:240px"></div>
+    </div>
+    <figcaption><b>1 · Temperature</b>The reading you'll leave it on. Condition line is derived from sunlight, rain and lightning.</figcaption>
+  </figure>
+
+  <!-- PAGE 2 — wind -->
+  <figure>
+    <div class="watch">
+      <div class="title" style="top:24px">Backyard</div>
+      <div class="cond" style="top:44px">Daylight · 12s ago</div>
+      <div class="big" style="top:69px;left:19px;width:262px;height:50px;line-height:50px;font-size:38.75px">3.4 m/s</div>
+      <div class="line" style="top:116px;left:25px;width:250px;font-size:17.5px;color:var(--accent)">NW  315°</div>
+      <div class="line" style="top:139px;left:25px;width:250px;font-size:15px;color:var(--dim)">Gust 5.1 m/s</div>
+      <div class="btn" style="left:19px;top:185px;width:94px">‹</div>
+      <div class="btn" style="left:94px;top:185px;width:94px">↻</div>
+      <div class="btn" style="left:169px;top:185px;width:94px">›</div>
+      <div class="dot" style="left:112px;top:240px"></div>
+      <div class="dot on" style="left:123px;top:240px"></div>
+      <div class="dot" style="left:134px;top:240px"></div>
+      <div class="dot" style="left:145px;top:240px"></div>
+    </div>
+    <figcaption><b>2 · Wind</b>Average, compass direction with degrees, and the gust.</figcaption>
+  </figure>
+
+  <!-- PAGE 3 — air -->
+  <figure>
+    <div class="watch">
+      <div class="title" style="top:24px">Backyard</div>
+      <div class="cond" style="top:44px">Daylight · 12s ago</div>
+      <div class="big" style="top:69px;left:19px;width:262px;height:50px;line-height:50px;font-size:38.75px">58%</div>
+      <div class="line" style="top:116px;left:25px;width:250px;font-size:17.5px;color:var(--accent)">Dew point 15°C</div>
+      <div class="line" style="top:139px;left:25px;width:250px;font-size:15px;color:var(--dim)">1013.2 hPa  ↗</div>
+      <div class="btn" style="left:19px;top:185px;width:94px">‹</div>
+      <div class="btn" style="left:94px;top:185px;width:94px">↻</div>
+      <div class="btn" style="left:169px;top:185px;width:94px">›</div>
+      <div class="dot" style="left:112px;top:240px"></div>
+      <div class="dot" style="left:123px;top:240px"></div>
+      <div class="dot on" style="left:134px;top:240px"></div>
+      <div class="dot" style="left:145px;top:240px"></div>
+    </div>
+    <figcaption><b>3 · Air</b>Humidity, dew point, and sea-level pressure with its rising/falling arrow.</figcaption>
+  </figure>
+
+  <!-- PAGE 4 — sun, rain, lightning -->
+  <figure>
+    <div class="watch">
+      <div class="title" style="top:24px">Backyard</div>
+      <div class="cond" style="top:44px">Daylight · 12s ago</div>
+      <div class="big" style="top:69px;left:19px;width:262px;height:50px;line-height:50px;font-size:38.75px">UV 6</div>
+      <div class="line" style="top:116px;left:25px;width:250px;font-size:17.5px;color:var(--accent)">Rain today 2.4 mm</div>
+      <div class="line" style="top:139px;left:25px;width:250px;font-size:15px;color:var(--dim)">Solar 486 W/m²</div>
+      <div class="btn" style="left:19px;top:185px;width:94px">‹</div>
+      <div class="btn" style="left:94px;top:185px;width:94px">↻</div>
+      <div class="btn" style="left:169px;top:185px;width:94px">›</div>
+      <div class="dot" style="left:112px;top:240px"></div>
+      <div class="dot" style="left:123px;top:240px"></div>
+      <div class="dot" style="left:134px;top:240px"></div>
+      <div class="dot on" style="left:145px;top:240px"></div>
+    </div>
+    <figcaption><b>4 · Sun, rain, lightning</b>UV index and rain today; the last line becomes a strike count during a storm.</figcaption>
+  </figure>
+
+  <!-- ERROR STATE -->
+  <figure>
+    <div class="watch">
+      <div class="title" style="top:24px">Tempest</div>
+      <div class="status" style="top:60px;left:31px;width:238px;font-size:16.25px;color:var(--text)">That station ID was not found.
+Check it in the app settings.</div>
+    </div>
+    <figcaption><b>Error state</b>What you get before the station ID is set — plain words, and what to do about it.</figcaption>
+  </figure>
+
+  <!-- THUNDERSTORM -->
+  <figure>
+    <div class="watch">
+      <div class="title" style="top:24px">Backyard</div>
+      <div class="cond" style="top:44px">Thunderstorm · 8s ago</div>
+      <div class="big" style="top:60px;left:19px;width:262px;height:75px;line-height:75px;font-size:57.5px">21°C</div>
+      <div class="line" style="top:134px;left:25px;width:250px;font-size:15px;color:var(--dim)">Feels 22°C · Stay in</div>
+      <div class="btn" style="left:19px;top:185px;width:94px">‹</div>
+      <div class="btn" style="left:94px;top:185px;width:94px">↻</div>
+      <div class="btn" style="left:169px;top:185px;width:94px">›</div>
+      <div class="dot on" style="left:112px;top:240px"></div>
+      <div class="dot" style="left:123px;top:240px"></div>
+      <div class="dot" style="left:134px;top:240px"></div>
+      <div class="dot" style="left:145px;top:240px"></div>
+    </div>
+    <figcaption><b>Storm</b>Lightning within the hour overrides the condition and the comfort word.</figcaption>
+  </figure>
+
+  <!-- IMPERIAL -->
+  <figure>
+    <div class="watch">
+      <div class="title" style="top:24px">Backyard</div>
+      <div class="cond" style="top:44px">Daylight · 12s ago</div>
+      <div class="big" style="top:60px;left:19px;width:262px;height:75px;line-height:75px;font-size:57.5px">75°F</div>
+      <div class="line" style="top:134px;left:25px;width:250px;font-size:15px;color:var(--dim)">Feels 77°F · Pleasant</div>
+      <div class="btn" style="left:19px;top:185px;width:94px">‹</div>
+      <div class="btn" style="left:94px;top:185px;width:94px">↻</div>
+      <div class="btn" style="left:169px;top:185px;width:94px">›</div>
+      <div class="dot on" style="left:112px;top:240px"></div>
+      <div class="dot" style="left:123px;top:240px"></div>
+      <div class="dot" style="left:134px;top:240px"></div>
+      <div class="dot" style="left:145px;top:240px"></div>
+    </div>
+    <figcaption><b>Imperial units</b>Same screen with °F, mph, inHg and inches — set in the phone's app settings.</figcaption>
+  </figure>
+
+</div>
+
+<div class="note">
+  <h2>How this matches the watch</h2>
+  <ul>
+    <li>Circle is the full <code>480 × 480</code> panel; nothing sits outside it. The largest element, the temperature, is 92 px tall on a 480 px face.</li>
+    <li>Positions and sizes are the ones in <code>page/index.js</code> and <code>page/metrics.js</code>, multiplied by 0.625 to fit this page — so the proportions are the watch's, not an artist's impression.</li>
+    <li>The real app uses the watch's own fonts, which are a little wider than these. Long lines like <code>Lightning: 12 in the last hour</code> will be tighter on the watch; tell me if one clips and I'll shorten it.</li>
+    <li>Readings here are made up for illustration. On the watch they come from your Tempest station over the phone, refreshed every 60 seconds.</li>
+  </ul>
+</div>
+
+</body>
+</html>

@@ -117,7 +117,16 @@ function render(page) {
         })
       ]),
       testLine
-        ? Text({ style: Object.assign({}, hint, { color: '#2f6f4f', fontSize: '13px' }) }, [testLine])
+        ? Text(
+            {
+              style: Object.assign({}, hint, {
+                color: page.state.testOk ? '#2f6f4f' : '#8a3b2f',
+                fontSize: '13px',
+                marginTop: '10px'
+              })
+            },
+            [testLine]
+          )
         : null
     ]),
     View({ style: card }, [
@@ -132,6 +141,7 @@ AppSettingsPage({
     props: null,
     cfg: DEFAULT_CONFIG,
     testing: false,
+    testOk: false,
     testResult: ''
   },
 
@@ -140,7 +150,7 @@ AppSettingsPage({
     this.state.props.rerender()
   },
 
-  // A quick check from the phone itself, so the user does not have to guess.
+  // A quick check of the station, run on the phone by the side service.
   testConnection() {
     const cfg = this.state.cfg
     if (!isConfigured(cfg)) {
@@ -148,49 +158,40 @@ AppSettingsPage({
       this.rerender()
       return
     }
+    // The settings page has no reliable network of its own, so the check is
+    // handed to the side service on the phone: it does the HTTP call with the
+    // same code the watch uses, and we listen for the answer on the channel.
     this.state.testing = true
     this.state.testResult = gettext('testing')
     this.rerender()
-    const url =
-      'https://swd.weatherflow.com/swd/rest/observations/station/' +
-      encodeURIComponent(extractStationId(cfg.stationId)) +
-      (cfg.token ? '?token=' + encodeURIComponent(cfg.token) : '')
-    fetch(url, { method: 'GET', headers: { Accept: 'application/json' } })
+    this.state.props.messageBuilder
+      .call({
+        method: 'TEST_CONNECTION',
+        params: { stationId: extractStationId(cfg.stationId), token: cfg.token }
+      })
       .then((res) => {
         this.state.testing = false
-        let parsed = res.body
-        if (typeof parsed === 'string') {
-          try {
-            parsed = JSON.parse(parsed)
-          } catch (e) {
-            parsed = null
-          }
-        }
-        if (res.status === 401 || res.status === 403) {
-          this.state.testResult = gettext('errAuth')
-        } else if (res.status === 404) {
-          this.state.testResult = gettext('errNotFound')
-        } else if (!parsed || !parsed.obs || !parsed.obs.length) {
-          this.state.testResult = gettext('errNoData')
-        } else {
-          const o = parsed.obs[0]
-          this.state.testResult =
-            gettext('okPrefix') +
-            ' ' +
-            (parsed.station_name || cfg.stationId) +
-            ' \u2014 ' +
-            (o.air_temperature === undefined ? '--' : o.air_temperature) +
-            '\u00b0C, ' +
-            (o.relative_humidity === undefined ? '--' : o.relative_humidity) +
-            '% RH'
-        }
+        const r = (res && res.result) || {}
+        this.state.testOk = !!r.ok
+        this.state.testResult = r.message || gettext('errNetwork')
         this.rerender()
       })
-      .catch(() => {
+      .catch((err) => {
         this.state.testing = false
-        this.state.testResult = gettext('errNetwork')
+        this.state.testResult =
+          gettext('errNoAnswer') + (err && err.message ? ' (' + err.message + ')' : '')
         this.rerender()
       })
+  },
+
+  // Fired when the side service pushes a fresh result for the watch.
+  onMessage(msg) {
+    if (msg && msg.method === 'TEST_RESULT') {
+      this.state.testing = false
+      this.state.testOk = !!(msg.params && msg.params.ok)
+      this.state.testResult = (msg.params && msg.params.message) || ''
+      this.rerender()
+    }
   },
 
   build(props) {
