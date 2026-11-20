@@ -177,6 +177,18 @@ AppSettingsPage({
     this.state.testResult = gettext('checkingOnWatch')
     this.rerender()
 
+    // If neither the watch nor the side service answers, say so instead of
+    // leaving the line on "checking" for ever.
+    if (this.state.watchTimer && typeof clearTimeout === 'function') clearTimeout(this.state.watchTimer)
+    if (typeof setTimeout === 'function') {
+      this.state.watchTimer = setTimeout(() => {
+        if (!this.state.testing) return
+        this.state.testing = false
+        this.state.testResult = gettext('errNoAnswer')
+        this.rerender()
+      }, 20000)
+    }
+
     // Best effort: if the channel does exist, ask straight away.
     try {
       if (this.state.props && this.state.props.messageBuilder) {
@@ -188,6 +200,7 @@ AppSettingsPage({
           .then((res) => {
             const r = (res && res.result) || {}
             if (!r.message) return
+            if (this.state.watchTimer && typeof clearTimeout === 'function') clearTimeout(this.state.watchTimer)
             this.state.testing = false
             this.state.testOk = !!r.ok
             this.state.testResult = r.message
@@ -202,6 +215,7 @@ AppSettingsPage({
   // Fired when the side service pushes a fresh result for the watch.
   onMessage(msg) {
     if (msg && msg.method === 'TEST_RESULT') {
+      if (this.state.watchTimer && typeof clearTimeout === 'function') clearTimeout(this.state.watchTimer)
       this.state.testing = false
       this.state.testOk = !!(msg.params && msg.params.ok)
       this.state.testResult = (msg.params && msg.params.message) || ''
@@ -229,6 +243,7 @@ AppSettingsPage({
       if (!r) return
       // Older than a minute: the request was for a previous attempt, ignore it.
       if (Date.now() - (parsed.at || 0) > 60000) return
+      if (this.state.watchTimer && typeof clearTimeout === 'function') clearTimeout(this.state.watchTimer)
       this.state.testing = false
       this.state.testOk = !!r.ok
       this.state.testResult = r.message || ''

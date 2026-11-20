@@ -451,3 +451,15 @@ test('side service: every identifier it uses is imported', () => {
     assert.match(src, /import \{[^}]*MessageBuilder[^}]*\} from '\.\.\/shared\/message-side'/)
   }
 })
+
+// The settings page could sit on "Checking… now open Tempest" for ever when
+// neither the watch nor the side service answered. A timeout must end it.
+test('settings page: the check cannot stay on "checking" for ever', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'setting', 'index.js'), 'utf8')
+  assert.match(src, /watchTimer = setTimeout/, 'the check needs a timeout')
+  assert.ok(
+    (src.match(/clearTimeout\(this\.state\.watchTimer\)/g) || []).length >= 3,
+    'every way a result can arrive must cancel the timeout'
+  )
+  assert.match(src, /errNoAnswer/, 'the timeout must show a real message')
+})
