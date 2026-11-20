@@ -1,5 +1,9 @@
 # Tempest for Zepp OS (Amazfit)
 
+[![version](https://img.shields.io/badge/version-1.4.0-0d7ea8)](#)
+[![release](https://img.shields.io/badge/release-v1.4.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
+[![platform](https://img.shields.io/badge/Amazfit%20Balance%202-Zepp%20OS%205-4dd0e1)](#)
+
 A watch app that shows live conditions from your own **WeatherFlow Tempest**
 personal weather station: temperature, feels-like, humidity, dew point, wind and
 gust, pressure and trend, UV, solar, rain today and lightning.
@@ -9,7 +13,7 @@ gust, pressure and trend, UV, solar, rain today and lightning.
   watch itself has no internet
 - Settings page: `setting/index.js` — where you enter the station ID
 - Mapping and unit conversion: `utils/format.js` (pure JS, unit tested)
-- Tests: `npm test` (11 tests, no watch needed)
+- Tests: `npm test` (14 tests, no watch needed)
 
 ## How it works
 
@@ -50,8 +54,8 @@ which one you are on.
 
 The package is published as a public GitHub release, so there is nothing to host:
 
-- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.2.0>
-- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.2.0/tempest-watch-balance2.zab>
+- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.4.0>
+- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.4.0/tempest-watch-balance2.zab>
 - QR: `docs/install-qr.png`
 
 Zepp app › Profile › your Balance 2 › Developer Mode › QR scanner, and scan that
@@ -83,8 +87,8 @@ The short version: turn on developer mode (seven taps on the Zepp logo), put the
 
 ```bash
 npm install
-npm test          # 11 tests over the mapping and the side service
-npx zeus build    # writes dist/1021234-Tempest-1.0.0-<timestamp>.zab
+npm test          # 14 tests over the mapping, side service and settings page
+npx zeus build    # writes dist/1034242-Tempest-1.4.0-<timestamp>.zab
 ```
 
 Install on the watch, either way:
@@ -104,8 +108,20 @@ Target: **Amazfit Balance 2** — round 480 x 480 AMOLED, Zepp OS 5.0, API level
   the conversion itself.
 - The observation endpoint has no sky-condition text ("partly cloudy"), so the
   one-line condition at the top is derived from rain, lightning, solar and UV.
-- App ID `1021234` is a placeholder; change it in `app.json` if you register the
-  app in the Zepp developer console.
+- App ID `1034242` is in Zepp's public range but is not registered in the Zepp
+  developer console; change it in `app.json` if you publish this yourself.
 - This is a personal-use client. WeatherFlow's remote data access policy expects
   third-party apps to read the station owner's own data; if you ever publish it
   for other people's stations, use their OAuth flow instead of a personal token.
+
+---
+
+## Version and release
+
+Current version: **1.4.0** (`app.version` in `app.json`).
+Latest release: <https://github.com/josephwmi/tempest-watch/releases/latest>
+
+When you cut a new version, bump `app.version.code` and `app.version.name` in
+`app.json`, then run `node scripts/release-notes.cjs` to print the version lines
+this README should carry. That script reads `app.json` rather than trusting these
+words, so the README can be checked instead of hoped for.

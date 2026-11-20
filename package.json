@@ -7,7 +7,8 @@
     "test": "node --test scripts/test.cjs",
     "build": "zeus build",
     "preview": "zeus preview",
-    "qr": "node scripts/make-qr.cjs"
+    "qr": "node scripts/make-qr.cjs",
+    "check": "node scripts/release-notes.cjs"
   },
   "author": "",
   "license": "MIT",
