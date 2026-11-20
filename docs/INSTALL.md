@@ -69,9 +69,9 @@ npx zeus install dist/tempest-watch-balance2.zab
 This app now has a public home, so you do not need to host anything:
 
 - Repository: <https://github.com/josephwmi/tempest-watch>
-- Release asset: https://github.com/josephwmi/tempest-watch/releases/download/v1.1.0/tempest-watch-balance2.zab
+- Release asset: https://github.com/josephwmi/tempest-watch/releases/download/v1.2.0/tempest-watch-balance2.zab
 - QR code: `docs/install-qr.png` — scan this in step 4. It encodes
-  `zpkd1://github.com/josephwmi/tempest-watch/releases/download/v1.1.0/tempest-watch-balance2.zab`
+  `zpkd1://github.com/josephwmi/tempest-watch/releases/download/v1.2.0/tempest-watch-balance2.zab`
 
 To make a QR for some other build or host:
 

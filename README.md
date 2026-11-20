@@ -50,8 +50,8 @@ which one you are on.
 
 The package is published as a public GitHub release, so there is nothing to host:
 
-- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.1.0>
-- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.1.0/tempest-watch-balance2.zab>
+- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.2.0>
+- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.2.0/tempest-watch-balance2.zab>
 - QR: `docs/install-qr.png`
 
 Zepp app › Profile › your Balance 2 › Developer Mode › QR scanner, and scan that
