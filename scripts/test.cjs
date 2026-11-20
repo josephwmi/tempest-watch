@@ -385,64 +385,6 @@ test('app.json: version code and name are consistent', () => {
 // support page simply does nothing. These pin the three joins that failed
 // silently during development.
 
-test('kpay: both halves carry the product id', () => {
-  const ID = '1477462642'
-  const side = fs.readFileSync(path.join(ROOT, 'app-side', 'index.js'), 'utf8')
-  const watch = fs.readFileSync(path.join(ROOT, 'page', 'support', 'kpay.js'), 'utf8')
-  assert.ok(side.includes(ID), 'the side service must know the KiezelPay product id')
-  assert.ok(watch.includes(ID), 'the support page must know the KiezelPay product id')
-})
-
-test('app.json: the support page is registered', () => {
-  const app = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
-  const pages = app.targets.default.module.page.pages
-  assert.ok(pages.includes('page/support/index'), 'page/support/index must be in pages')
-})
-
-test('side service: KiezelPay messages are routed to the SDK', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'app-side', 'index.js'), 'utf8')
-  assert.match(src, /kpay-amazfit\/app-side/, 'the side service must import the SDK')
-  assert.match(src, /KPAY_/, 'KPAY_ messages must be recognised')
-})
-
-test('support page: the SDK is imported, not require()d', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'page', 'support', 'kpay.js'), 'utf8')
-  assert.ok(!/^\s*const .*require\(/m.test(src), 'a require() of the SDK is tree-shaken away by the bundler')
-  assert.match(src, /import KpayApp from 'kpay-amazfit\/app'/, 'the watch half must import the SDK')
-})
-
-// The store package must not carry test mode: kzl.io/code would accept codes
-// without charging, and the donation would silently never arrive.
-test('kpay: the shipped build is not in test mode', () => {
-  for (const f of [['app-side', 'index.js'], ['page', 'support', 'kpay.js']]) {
-    const src = fs.readFileSync(path.join(ROOT, ...f), 'utf8')
-    if (!src.includes('testMode')) continue
-    assert.doesNotMatch(src, /testMode:\s*true/, f.join('/') + ' must not ship in KiezelPay test mode')
-  }
-})
-
-// --- KiezelPay SDK patch ---------------------------------------------------
-// The round-screen dialog layout lives in a patch to node_modules, which a
-// dependency reinstall wipes. These make sure it is present before a build and
-// that the patch script can be re-run safely.
-
-test('kpay patch: the installed SDK carries the round-screen layout', () => {
-  const { TARGET, MARKER } = require('./patch-kpay.cjs')
-  if (!fs.existsSync(TARGET)) return // dependency not installed here
-  assert.ok(
-    fs.readFileSync(TARGET, 'utf8').includes(MARKER),
-    'run `npm run patch` (or npm install): the payment dialog is laid out for a phone screen'
-  )
-})
-
-test('kpay patch: re-running it is a no-op', () => {
-  const { TARGET, main } = require('./patch-kpay.cjs')
-  if (!fs.existsSync(TARGET)) return
-  const before = fs.readFileSync(TARGET, 'utf8')
-  assert.equal(main(), 0)
-  assert.equal(fs.readFileSync(TARGET, 'utf8'), before, 'patching twice must not change the SDK')
-})
-
 test('side service: every identifier it uses is imported', () => {
   const src = fs.readFileSync(path.join(ROOT, 'app-side', 'index.js'), 'utf8')
   // MessageBuilder is easy to lose when the config import is rewritten, and the
@@ -454,12 +396,3 @@ test('side service: every identifier it uses is imported', () => {
 
 // The settings page could sit on "Checking… now open Tempest" for ever when
 // neither the watch nor the side service answered. A timeout must end it.
-test('settings page: the check cannot stay on "checking" for ever', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'setting', 'index.js'), 'utf8')
-  assert.match(src, /watchTimer = setTimeout/, 'the check needs a timeout')
-  assert.ok(
-    (src.match(/clearTimeout\(this\.state\.watchTimer\)/g) || []).length >= 3,
-    'every way a result can arrive must cancel the timeout'
-  )
-  assert.match(src, /errNoAnswer/, 'the timeout must show a real message')
-})

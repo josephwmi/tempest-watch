@@ -6,7 +6,6 @@ import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from '@zos/device'
 import { ERR, isConfigured, normalizeConfig } from '../utils/constants'
 import { comfortLabel, conditionLabel } from '../utils/format'
 
-import { isLicensed, showSupportPage } from './support/kpay'
 import { BTN_H, BTN_RADIUS, BTN_W, BTN_Y, BTN_FONT, RETRY_BTN, SUPPORT } from './metrics'
 
 const logger = Logger.getLogger('tempest-page')
@@ -154,9 +153,7 @@ Page(
       w.next = makeButton('>', W - px(30) - bw, by, bw, bh, () => this.turn(1))
       w.refresh = makeButton('\u21bb', Math.floor((W - bw) / 2), by, bw, bh, () => this.load(true))
 
-      // Page 5: support. The CTA is a real button only once KiezelPay is set up
-      // in shared/kpay-config.js; before that it says so plainly rather than
-      // opening a purchase that cannot complete.
+      // Page 5: support. A thank-you, nothing to buy and nothing gated.
       w.supTitle = label({
         x: px(40), y: px(SUPPORT.title_y), w: W - px(80), h: px(40),
         text_size: px(SUPPORT.title_font), color: COLOR_TEXT
@@ -165,17 +162,6 @@ Page(
         x: px(50), y: px(SUPPORT.body_y), w: W - px(100), h: px(SUPPORT.body_h),
         text_size: px(SUPPORT.body_font), color: COLOR_DIM, text_style: hmUI.text_style.WRAP
       })
-      w.supCta = hmUI.createWidget(hmUI.widget.BUTTON, {
-        x: px(SUPPORT.cta_x), y: px(SUPPORT.cta_y), w: px(SUPPORT.cta_w), h: px(SUPPORT.cta_h),
-        radius: px(SUPPORT.cta_radius),
-        text: 'Support Tempest',
-        text_size: px(SUPPORT.cta_font),
-        color: 0x000000,
-        normal_color: COLOR_ACCENT,
-        press_color: 0x26a69a,
-        click_func: () => showSupportPage()
-      })
-
       // Page dots
       const dotY = px(BTN_Y + BTN_H + 26)
       const gap = px(18)
@@ -335,7 +321,7 @@ Page(
       w.retry.setProperty(hmUI.prop.VISIBLE, showStatus && retry)
 
       const pageVisible = !showStatus
-      const names = ['temp', 'feels', 'wind', 'windDir', 'gust', 'hum', 'dew', 'press', 'uv', 'rain', 'strike', 'supTitle', 'supBody', 'supCta']
+      const names = ['temp', 'feels', 'wind', 'windDir', 'gust', 'hum', 'dew', 'press', 'uv', 'rain', 'strike', 'supTitle', 'supBody']
       names.forEach((n) => {
         if (w[n]) w[n].setProperty(hmUI.prop.VISIBLE, pageVisible && this.namesOnPage(n))
       })
@@ -355,24 +341,17 @@ Page(
     paintSupport() {
       const w = this.state.widgets
       if (!w.supTitle) return
-      const licensed = isLicensed()
-      setText(w.supTitle, licensed ? 'Thank you' : 'Support Tempest')
-      const paidText = [
-        'Your support is what keeps',
-        'this app going.',
-        '',
-        'Nothing is locked:',
-        'every reading is yours',
-        'whether you gave or not.'
-      ].join('\n')
-      const freeText = [
-        'Tempest is free, and it',
-        'will stay free. If you find',
-        'it useful, you can send a',
-        'thank-you from the phone.'
-      ].join('\n')
-      setText(w.supBody, licensed ? paidText : freeText)
-      w.supCta.setProperty(hmUI.prop.VISIBLE, !licensed)
+      setText(w.supTitle, 'Thank you')
+      setText(
+        w.supBody,
+        [
+          'Tempest is free, and it',
+          'will stay free.',
+          '',
+          'Nothing is locked:',
+          'every reading is yours.'
+        ].join('\n')
+      )
     },
 
     namesOnPage(name) {
@@ -381,7 +360,7 @@ Page(
         wind: 1, windDir: 1, gust: 1,
         hum: 2, dew: 2, press: 2,
         uv: 3, rain: 3, strike: 3,
-        supTitle: 4, supBody: 4, supCta: 4
+        supTitle: 4, supBody: 4
       }
       return pageOf[name] === this.state.page
     },
@@ -389,7 +368,7 @@ Page(
     showPage(n) {
       this.state.page = (n + PAGES) % PAGES
       const w = this.state.widgets
-      const names = ['temp', 'feels', 'wind', 'windDir', 'gust', 'hum', 'dew', 'press', 'uv', 'rain', 'strike', 'supTitle', 'supBody', 'supCta']
+      const names = ['temp', 'feels', 'wind', 'windDir', 'gust', 'hum', 'dew', 'press', 'uv', 'rain', 'strike', 'supTitle', 'supBody']
       names.forEach((name) => {
         if (w[name]) w[name].setProperty(hmUI.prop.VISIBLE, this.namesOnPage(name))
       })

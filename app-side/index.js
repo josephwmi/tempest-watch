@@ -11,58 +11,6 @@ import {
 } from '../utils/constants'
 import { toViewModel } from '../utils/format'
 
-// KiezelPay: the watch shows a payment code, this half asks KiezelPay whether
-// that code has been paid. Created lazily so a payment failure can never stop
-// the weather working.
-import KpayAppSide from 'kpay-amazfit/app-side'
-import { MessageBuilder } from '../shared/message-side'
-
-// The product id is written here, not imported. Zeus's bundler drops a config
-// object that reaches this file only through an import, and the built package
-// then has no product id at all -- every purchase would go to product 0.
-const KPAY_CONFIG = { id: 1477462642, trialEnabled: false, testMode: false }
-
-let kpayMessageBuilder = null
-let kpay = null
-
-function getKpay() {
-  if (kpay) return kpay
-  if (!KPAY_CONFIG.id) return null
-  // Logged so a support problem can be traced to the right product on the watch
-  console.log('kpay product ' + KPAY_CONFIG.id)
-  try {
-    kpayMessageBuilder = new MessageBuilder()
-    kpay = new KpayAppSide(Object.assign({}, KPAY_CONFIG, { messageBuilder: kpayMessageBuilder }))
-    kpay.init()
-    console.log('kpay side ready')
-  } catch (e) {
-    console.log('kpay side unavailable: ' + (e && e.message ? e.message : e))
-    kpay = null
-  }
-  return kpay
-}
-
-// KiezelPay messages are answered by the library; everything else by us.
-function handleKpayMessage(method, payload) {
-  if (!method || method.indexOf('KPAY_') !== 0) return false
-  const lib = getKpay()
-  if (!lib) return true
-  try {
-    const json = payload || {}
-    if (method === 'KPAY_CANCEL_PURCHASE') {
-      lib.startedPurchase = false
-      if (lib.recheckTimeout) clearTimeout(lib.recheckTimeout)
-      if (lib.attemptingFetchTimeout) clearTimeout(lib.attemptingFetchTimeout)
-      if (lib.expectingPingTimeout) clearTimeout(lib.expectingPingTimeout)
-      return true
-    }
-    lib.onRequest({ method: method, params: json.params || {} })
-  } catch (e) {
-    // KiezelPay is best effort; never let it break a weather request
-  }
-  return true
-}
-
 function readConfig() {
   const raw = settingsLib.getItem(SETTINGS_KEY)
   if (!raw) return normalizeConfig({})
@@ -284,15 +232,8 @@ function getConfig(res) {
 
 AppSideService(
   BaseSideService({
-    onInit() {
-      getKpay()
-    },
+    onInit() {},
     onRequest(req, res) {
-      // KiezelPay messages are answered by the library, not by us.
-      if (handleKpayMessage(req && req.method, req)) {
-        res(null, { ok: true })
-        return
-      }
       if (req.method === 'GET_WEATHER') {
         getWeather(res, req.params && req.params.force)
       } else if (req.method === 'GET_CONFIG') {

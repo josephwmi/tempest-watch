@@ -5,8 +5,8 @@
     "appName": "Tempest",
     "appType": "app",
     "version": {
-      "code": 12,
-      "name": "1.8.3"
+      "code": 13,
+      "name": "2.0.0"
     },
     "icon": "icon-256.png",
     "vender": "tempest-watch",
@@ -29,8 +29,7 @@
       "module": {
         "page": {
           "pages": [
-            "page/index",
-            "page/support/index"
+            "page/index"
           ]
         },
         "app-side": {
