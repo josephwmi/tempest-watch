@@ -1,7 +1,7 @@
 # Tempest for Zepp OS (Amazfit)
 
-[![version](https://img.shields.io/badge/version-1.4.0-0d7ea8)](#)
-[![release](https://img.shields.io/badge/release-v1.4.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
+[![version](https://img.shields.io/badge/version-1.5.0-0d7ea8)](#)
+[![release](https://img.shields.io/badge/release-v1.5.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
 [![platform](https://img.shields.io/badge/Amazfit%20Balance%202-Zepp%20OS%205-4dd0e1)](#)
 
 A watch app that shows live conditions from your own **WeatherFlow Tempest**
@@ -54,8 +54,8 @@ which one you are on.
 
 The package is published as a public GitHub release, so there is nothing to host:
 
-- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.4.0>
-- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.4.0/tempest-watch-balance2.zab>
+- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.5.0>
+- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.5.0/tempest-watch-balance2.zab>
 - QR: `docs/install-qr.png`
 
 Zepp app › Profile › your Balance 2 › Developer Mode › QR scanner, and scan that
@@ -118,7 +118,7 @@ Target: **Amazfit Balance 2** — round 480 x 480 AMOLED, Zepp OS 5.0, API level
 
 ## Version and release
 
-Current version: **1.4.0** (`app.version` in `app.json`).
+Current version: **1.5.0** (`app.version` in `app.json`).
 Latest release: <https://github.com/josephwmi/tempest-watch/releases/latest>
 
 When you cut a new version, bump `app.version.code` and `app.version.name` in

@@ -176,7 +176,7 @@ function loadSideService(responseFactory) {
   globalThis.__settings = {
     getItem: (k) => (store.has(k) ? store.get(k) : null),
     setItem: (k, v) => store.set(k, v),
-    removeItem: (k) => store.delete(k),
+    removeItem: (k) => { store.delete(k); return true },
     clear: () => store.clear()
   }
   globalThis.fetch = responseFactory
@@ -286,4 +286,37 @@ test('settings page: the button asks the side service, it does not fetch itself'
   const src = fs.readFileSync(path.join(ROOT, 'setting/index.js'), 'utf8')
   assert.ok(src.includes("method: 'TEST_CONNECTION'"), 'asks the side service')
   assert.ok(!/fetch\(/.test(src), 'no direct fetch in the settings page')
+})
+
+// --- settings check relayed through storage ------------------------------
+// The settings page cannot always reach the side service, so the request is
+// parked in settings storage and collected when the watch app opens.
+
+test('side service: GET_PENDING_TEST answers a parked check and clears it', async () => {
+  await loadSideService(async () => ({ status: 200, body: JSON.stringify(SAMPLE) }))
+  globalThis.__store.set('tempestPendingTest', JSON.stringify({ stationId: '12345', token: 'abc', at: Date.now() }))
+  const data = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest({ method: 'GET_PENDING_TEST', params: {} }, (err, d) => resolve(d))
+  })
+  assert.equal(data.pending, true)
+  assert.equal(data.result.ok, true)
+  assert.match(data.result.message, /^Connected: Backyard/)
+  const answer = globalThis.__settings.getItem('tempestPendingTest')
+  // the request is one-off: it must not fire again
+  const again = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest({ method: 'GET_PENDING_TEST', params: {} }, (err, d) => resolve(d))
+  })
+  assert.equal(again.pending, false)
+  // and the answer is left where the settings page can read it
+  assert.equal(JSON.parse(answer).result.ok, true)
+})
+
+test('side service: GET_PENDING_TEST does nothing when nothing is parked', async () => {
+  await loadSideService(async () => {
+    throw new Error('should not be called')
+  })
+  const data = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest({ method: 'GET_PENDING_TEST', params: {} }, (err, d) => resolve(d))
+  })
+  assert.equal(data.pending, false)
 })

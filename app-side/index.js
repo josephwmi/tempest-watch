@@ -1,6 +1,7 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
 import {
   API_HOST,
+  PENDING_KEY,
   CACHE_KEY,
   ERR,
   SETTINGS_KEY,
@@ -173,6 +174,58 @@ function testConnection(res, params) {
   })
 }
 
+// The settings page cannot always reach this service, so it leaves the check it
+// wants in settings storage. The watch app asks for it the moment it opens, and
+// the answer is written back for the settings page to show.
+function takePendingTest() {
+  let raw = null
+  try {
+    raw = settingsLib.getItem(PENDING_KEY)
+  } catch (e) {
+    return null
+  }
+  if (!raw) return null
+  try {
+    settingsLib.removeItem(PENDING_KEY)
+  } catch (e) {
+    settingsLib.setItem(PENDING_KEY, '')
+  }
+  try {
+    return JSON.parse(raw)
+  } catch (e) {
+    return null
+  }
+}
+
+function answerPendingTest(result) {
+  try {
+    settingsLib.setItem(PENDING_KEY, JSON.stringify({ result: result, at: Date.now() }))
+  } catch (e) {
+    // nothing else to do; the settings page will simply not see a result
+  }
+}
+
+function getPendingTest(res) {
+  const pending = takePendingTest()
+  if (!pending || !pending.stationId) {
+    res(null, { pending: false })
+    return
+  }
+  testConnection(
+    function (err, data) {
+      if (err) return
+      answerPendingTest(data)
+      res(null, { pending: true, result: data })
+      try {
+        this.call({ method: 'TEST_RESULT', params: data })
+      } catch (e) {
+        // the settings page may not be listening; the stored answer covers that
+      }
+    },
+    pending
+  )
+}
+
 function getConfig(res) {
   res(null, { config: readConfig() })
 }
@@ -187,6 +240,8 @@ AppSideService(
         getConfig(res)
       } else if (req.method === 'TEST_CONNECTION') {
         testConnection(res, req.params)
+      } else if (req.method === 'GET_PENDING_TEST') {
+        getPendingTest(res)
       } else {
         res({ message: 'unknown method ' + req.method })
       }

@@ -3,6 +3,8 @@
 
 export const SETTINGS_KEY = 'tempestConfig'
 export const CACHE_KEY = 'tempestCache'
+// One-off check requested from the settings page, answered by the side service.
+export const PENDING_KEY = 'tempestPendingTest'
 
 // Personal Access Token from tempestwx.com -> Settings -> Data Authorizations.
 // Optional: it is only needed if you prefer "stations/<token>" lookups; the

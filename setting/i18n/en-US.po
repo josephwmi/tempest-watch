@@ -60,3 +60,9 @@ msgstr "Pull down on the watch app to refresh, or open the app again."
 
 msgid "errNoAnswer"
 msgstr "No answer from the phone's side service. Make sure the watch is connected to the Zepp app, then tap Test again."
+
+msgid "checkingOnWatch"
+msgstr "Checking… now open Tempest on your watch. The result appears here within a few seconds."
+
+msgid "checkingShort"
+msgstr "Waiting for the watch…"

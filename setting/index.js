@@ -1,6 +1,7 @@
 import { gettext } from 'i18n'
 import {
   DEFAULT_CONFIG,
+  PENDING_KEY,
   SETTINGS_KEY,
   extractStationId,
   isConfigured,
@@ -105,7 +106,7 @@ function render(page) {
       Text({ style: body }, [savedLine]),
       View({ style: { marginTop: '10px' } }, [
         Button({
-          label: page.state.testing ? gettext('testing') : gettext('test'),
+          label: page.state.testing ? gettext('checkingShort') : gettext('test'),
           style: {
             fontSize: '14px',
             borderRadius: '22px',
@@ -158,32 +159,46 @@ AppSettingsPage({
       this.rerender()
       return
     }
-    // The settings page has no reliable network of its own, so the check is
-    // handed to the side service on the phone: it does the HTTP call with the
-    // same code the watch uses, and we listen for the answer on the channel.
+    // The settings page cannot rely on HTTP of its own, and the channel to the
+    // side service is not always there. So the check is written as a one-off
+    // request that the watch app collects: open the app on the watch while this
+    // line is showing, and the result comes back here within a few seconds.
+    storeCfg(this.state.props, cfg)
+    try {
+      this.state.props.settingsStorage.setItem(
+        PENDING_KEY,
+        JSON.stringify({ stationId: extractStationId(cfg.stationId), token: cfg.token, at: Date.now() })
+      )
+    } catch (e) {
+      // if this fails the direct channel below is the only way left
+    }
     this.state.testing = true
-    this.state.testResult = gettext('testing')
+    this.state.testOk = false
+    this.state.testResult = gettext('checkingOnWatch')
     this.rerender()
-    this.state.props.messageBuilder
-      .call({
-        method: 'TEST_CONNECTION',
-        params: { stationId: extractStationId(cfg.stationId), token: cfg.token }
-      })
-      .then((res) => {
-        this.state.testing = false
-        const r = (res && res.result) || {}
-        this.state.testOk = !!r.ok
-        this.state.testResult = r.message || gettext('errNetwork')
-        this.rerender()
-      })
-      .catch((err) => {
-        this.state.testing = false
-        this.state.testResult =
-          gettext('errNoAnswer') + (err && err.message ? ' (' + err.message + ')' : '')
-        this.rerender()
-      })
-  },
 
+    // Best effort: if the channel does exist, ask straight away.
+    try {
+      if (this.state.props && this.state.props.messageBuilder) {
+        this.state.props.messageBuilder
+          .call({
+            method: 'TEST_CONNECTION',
+            params: { stationId: extractStationId(cfg.stationId), token: cfg.token }
+          })
+          .then((res) => {
+            const r = (res && res.result) || {}
+            if (!r.message) return
+            this.state.testing = false
+            this.state.testOk = !!r.ok
+            this.state.testResult = r.message
+            this.rerender()
+          })
+          .catch(() => {})
+      }
+    } catch (e) {
+      // No channel on this Zepp app version; the watch route above still works.
+    }
+  },
   // Fired when the side service pushes a fresh result for the watch.
   onMessage(msg) {
     if (msg && msg.method === 'TEST_RESULT') {
@@ -194,9 +209,41 @@ AppSettingsPage({
     }
   },
 
+// A result the watch app collected while the settings page was closed.
+  startPolling() {
+    const read = () => {
+      let raw = null
+      try {
+        raw = this.state.props.settingsStorage.getItem(PENDING_KEY)
+      } catch (e) {
+        return
+      }
+      if (!raw) return
+      let parsed = null
+      try {
+        parsed = JSON.parse(raw)
+      } catch (e) {
+        return
+      }
+      const r = parsed && parsed.result
+      if (!r) return
+      // Older than a minute: the request was for a previous attempt, ignore it.
+      if (Date.now() - (parsed.at || 0) > 60000) return
+      this.state.testing = false
+      this.state.testOk = !!r.ok
+      this.state.testResult = r.message || ''
+      this.rerender()
+    }
+    this.stopPolling = () => {}
+    if (typeof setInterval === 'function') {
+      this.pollTimer = setInterval(read, 1000)
+    }
+  },
+
   build(props) {
     this.state.props = props
     this.state.cfg = readCfg(props)
+    if (!this.pollTimer) this.startPolling()
     return render(this)
   }
 })

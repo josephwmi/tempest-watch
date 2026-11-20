@@ -76,11 +76,24 @@ Page(
           this.state.config = normalizeConfig(data && data.config)
           this.paintStatus()
           if (isConfigured(this.state.config)) this.load(false)
+          this.collectPendingTest()
         })
         .catch(() => {
           this.state.config = normalizeConfig({})
           this.paintStatus()
         })
+    },
+
+// The phone's settings page cannot always reach the side service. When it
+    // asks for a station check it leaves the request in storage, and the watch
+    // app picks it up here the moment it opens.
+    collectPendingTest() {
+      this.request({ method: 'GET_PENDING_TEST', params: {} })
+        .then((data) => {
+          if (!data || !data.pending) return
+          logger.log('answered a settings check: ' + (data.result && data.result.ok))
+        })
+        .catch(() => {})
     },
 
     onResume() {
