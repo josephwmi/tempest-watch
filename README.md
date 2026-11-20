@@ -46,6 +46,17 @@ which one you are on.
 
 *(Layout sketch of page 1 — the real app draws these with the watch's own fonts.)*
 
+## Install in one tap on the watch
+
+The package is published as a public GitHub release, so there is nothing to host:
+
+- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.1.0>
+- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.1.0/tempest-watch-balance2.zab>
+- QR: `docs/install-qr.png`
+
+Zepp app › Profile › your Balance 2 › Developer Mode › QR scanner, and scan that
+image. Full walkthrough: **[docs/INSTALL.md](docs/INSTALL.md)**.
+
 ## Install on the watch
 
 Step-by-step, including the QR code: **[docs/INSTALL.md](docs/INSTALL.md)**.
