@@ -1,7 +1,7 @@
 # Tempest for Zepp OS (Amazfit)
 
-[![version](https://img.shields.io/badge/version-1.8.1-0d7ea8)](#)
-[![release](https://img.shields.io/badge/release-v1.8.1-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
+[![version](https://img.shields.io/badge/version-1.8.2-0d7ea8)](#)
+[![release](https://img.shields.io/badge/release-v1.8.2-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
 [![platform](https://img.shields.io/badge/Amazfit%20Balance%202-Zepp%20OS%205-4dd0e1)](#)
 
 A watch app that shows live conditions from your own **WeatherFlow Tempest**
@@ -54,8 +54,8 @@ which one you are on.
 
 The package is published as a public GitHub release, so there is nothing to host:
 
-- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.8.1>
-- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.8.1/tempest-watch-balance2.zab>
+- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v1.8.2>
+- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v1.8.2/tempest-watch-balance2.zab>
 - QR: `docs/install-qr.png`
 
 Zepp app › Profile › your Balance 2 › Developer Mode › QR scanner, and scan that
@@ -88,7 +88,7 @@ The short version: turn on developer mode (seven taps on the Zepp logo), put the
 ```bash
 npm install
 npm test          # 14 tests over the mapping, side service and settings page
-npx zeus build    # writes dist/1137328-Tempest-1.8.1-<timestamp>.zab
+npx zeus build    # writes dist/1137328-Tempest-1.8.2-<timestamp>.zab
 ```
 
 Install on the watch, either way:
@@ -119,7 +119,7 @@ Target: **Amazfit Balance 2** — round 480 x 480 AMOLED, Zepp OS 5.0, API level
 
 ## Version and release
 
-Current version: **1.8.1** (`app.version` in `app.json`).
+Current version: **1.8.2** (`app.version` in `app.json`).
 Latest release: <https://github.com/josephwmi/tempest-watch/releases/latest>
 
 When you cut a new version, bump `app.version.code` and `app.version.name` in

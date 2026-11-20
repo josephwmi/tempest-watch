@@ -1,3 +1,4 @@
+import { log as Logger } from '@zos/utils'
 import { EventBus } from './event'
 import { Deferred, timeout } from './defer'
 import { json2buf, buf2json, bin2hex, str2buf, buf2str } from './data'

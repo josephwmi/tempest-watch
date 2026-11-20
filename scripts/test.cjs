@@ -198,6 +198,15 @@ function loadSideService(responseFactory) {
     }
   }
 
+  // message-side imports @zos/utils for its logger; stub it for Node.
+  const zos = path.join(dir, 'node_modules', '@zos', 'utils')
+  fs.mkdirSync(zos, { recursive: true })
+  fs.writeFileSync(path.join(zos, 'package.json'), JSON.stringify({ name: '@zos/utils', type: 'module', main: 'index.js' }))
+  fs.writeFileSync(
+    path.join(zos, 'index.js'),
+    'export const log = { getLogger: () => ({ log() {}, error() {}, debug() {} }) }\nexport const px = (v) => v\n'
+  )
+
   // package.json so Node treats the copies as ESM
   fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ type: 'module' }))
 
@@ -432,4 +441,13 @@ test('kpay patch: re-running it is a no-op', () => {
   const before = fs.readFileSync(TARGET, 'utf8')
   assert.equal(main(), 0)
   assert.equal(fs.readFileSync(TARGET, 'utf8'), before, 'patching twice must not change the SDK')
+})
+
+test('side service: every identifier it uses is imported', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'app-side', 'index.js'), 'utf8')
+  // MessageBuilder is easy to lose when the config import is rewritten, and the
+  // failure is swallowed by the surrounding try/catch.
+  if (/new MessageBuilder\(/.test(src)) {
+    assert.match(src, /import \{[^}]*MessageBuilder[^}]*\} from '\.\.\/shared\/message-side'/)
+  }
 })

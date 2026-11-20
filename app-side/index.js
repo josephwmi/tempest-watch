@@ -15,6 +15,7 @@ import { toViewModel } from '../utils/format'
 // that code has been paid. Created lazily so a payment failure can never stop
 // the weather working.
 import KpayAppSide from 'kpay-amazfit/app-side'
+import { MessageBuilder } from '../shared/message-side'
 
 // The product id is written here, not imported. Zeus's bundler drops a config
 // object that reaches this file only through an import, and the built package
