@@ -31,7 +31,7 @@ Watch app  ──request──▶  app-side (phone, in the Zepp app)
   an empty screen.
 - A fetch is only made if the cache is older than 60 seconds; the middle button on
   the watch forces one.
-- Errors are shown as words on the watch: no station set, token rejected, station
+- Errors are shown as words on the watch: no station set, no token set, token rejected, station
   not found, no reading, no connection.
 
 ## Screens on the watch
@@ -76,9 +76,9 @@ The short version: turn on developer mode (seven taps on the Zepp logo), put the
 1. In the Zepp app: **Profile › your watch › App settings › Tempest**.
 2. **Station ID** — digits only, from tempestwx.com › Settings › Stations
    (a pasted station URL also works; the app pulls the number out).
-3. **Token (optional)** — tempestwx.com › Settings › Data Authorizations › Create
-   Token. Not needed for a plain station-id lookup; useful if WeatherFlow asks for
-   authenticated access or you later add OAuth.
+3. **Personal access token (required)** — tempestwx.com › Settings › Data Authorizations › Create
+   Token. Tempest's API answers every request without a token with HTTP 401, so the
+   app fetches nothing until both the station ID and the token are set.
 4. Pick **imperial** or **metric**.
 5. Tap **Test connection** — it should come back with your station name and a
    reading.
