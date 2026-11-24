@@ -562,7 +562,7 @@ test('side service: GET_PENDING_TEST does nothing when nothing is parked', async
 
 test('app.json: appId matches the registered console app', () => {
   const app = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
-  assert.equal(app.app.appId, 1137328, 'appId must match the Zepp console entry')
+  assert.equal(app.app.appId, 1138029, 'appId must match the Zepp console entry')
 })
 
 test('app.json: version code and name are consistent', () => {
