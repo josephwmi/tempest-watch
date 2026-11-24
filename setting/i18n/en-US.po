@@ -2,16 +2,16 @@ msgid "title"
 msgstr "Tempest weather station"
 
 msgid "intro"
-msgstr "Enter the station ID of your own Tempest. The watch app shows temperature, humidity, wind, pressure and rain straight from your backyard."
+msgstr "Enter the station ID and a personal access token for your own Tempest. Both are required. The watch app shows temperature, humidity, wind, pressure and rain straight from your backyard."
 
 msgid "stationId"
 msgstr "Station ID"
 
-msgid "tokenOptional"
-msgstr "Personal access token (optional)"
+msgid "token"
+msgstr "Personal access token (required)"
 
 msgid "whereToFind"
-msgstr "Find the ID at tempestwx.com > Settings > Stations. The token is optional: create one under Settings > Data Authorizations if you want the app to identify your account."
+msgstr "Find the ID at tempestwx.com > Settings > Stations. Create the token at tempestwx.com > Settings > Data Authorizations > Create Token. Tempest refuses every request without a token."
 
 msgid "units"
 msgstr "Units"
@@ -37,11 +37,17 @@ msgstr "Checking with Tempest..."
 msgid "enterIdFirst"
 msgstr "Enter a station ID first."
 
+msgid "enterTokenFirst"
+msgstr "Enter your personal access token first. Tempest needs it for every request."
+
+msgid "tokenMissing"
+msgstr "(access token still missing)"
+
 msgid "okPrefix"
 msgstr "Connected:"
 
 msgid "errAuth"
-msgstr "Tempest rejected the token. Remove it or create a new one."
+msgstr "Tempest rejected the token. Check it, or create a new one."
 
 msgid "errNotFound"
 msgstr "That station ID was not found. Check the digits."

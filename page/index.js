@@ -3,7 +3,7 @@ import { log as Logger } from '@zos/utils'
 import { BasePage } from '@zeppos/zml/base-page'
 import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from '@zos/device'
 
-import { ERR, isConfigured, normalizeConfig } from '../utils/constants'
+import { ERR, hasToken, isConfigured, normalizeConfig } from '../utils/constants'
 import { comfortLabel, conditionLabel } from '../utils/format'
 
 import { computeLayout, dotX, RETRY_TEXT } from './metrics'
@@ -284,8 +284,10 @@ Page(
         message = 'Fetching from Tempest\u2026'
       } else if (this.state.error === ERR.NO_STATION || (cfg && !isConfigured(cfg))) {
         message = 'No station set.\nOpen Zepp \u203a Profile \u203a Tempest\nand enter your station ID.'
+      } else if (this.state.error === ERR.NO_TOKEN || (cfg && !hasToken(cfg))) {
+        message = 'No access token set.\nOpen Zepp \u203a Profile \u203a Tempest\nand enter your token.'
       } else if (this.state.error === ERR.AUTH) {
-        message = 'Tempest rejected the token.\nCheck the token in the app settings.'
+        message = 'Tempest rejected the token.\nCheck it in the app settings.'
         retry = true
       } else if (this.state.error === ERR.BAD_STATION) {
         message = 'That station ID was not found.\nCheck it in the app settings.'

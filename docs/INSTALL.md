@@ -111,12 +111,15 @@ If your hosting gives you a link with query parameters or a share token, use the
 1. **Zepp app › Profile › your watch › App settings › Tempest**.
 2. **Station ID** — the digits from tempestwx.com › Settings › Stations. (Pasting
    the whole station URL works too; the app pulls the number out.)
-3. **Token** — optional. Create one at tempestwx.com › Settings › Data
-   Authorizations if you want the app to identify your account.
+3. **Personal access token** — required. Create one at tempestwx.com › Settings ›
+   Data Authorizations › Create Token. Tempest refuses every request without a
+   token, so the watch shows "No access token set" until you enter one.
 4. **Units** — imperial (F, mph, inHg, in) or metric (C, m/s, hPa, mm).
 5. Tap **Test connection**. It should answer with your station name and a live
    reading, e.g. *Connected: Backyard — 28°C, 78% RH*.
    - "Station ID was not found" → check the digits.
+   - "Enter your personal access token first" → the token field is empty.
+   - "Tempest rejected the token" → check it, or create a new token.
    - "Could not reach Tempest" → phone's connection, or a token pasted with a
      stray space.
 6. Open **Tempest** on the watch. Page 1 shows the temperature; `<` and `>` turn

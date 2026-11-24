@@ -285,7 +285,7 @@ test('side service: network failure keeps the last reading as stale', async () =
   const mod = await loadSideService(async () => {
     throw new Error('timeout')
   })
-  globalThis.__store.set('tempestConfig', JSON.stringify({ stationId: '12345', units: 'metric' }))
+  globalThis.__store.set('tempestConfig', JSON.stringify({ stationId: '12345', token: 'abc', units: 'metric' }))
   const view = { stationId: '12345', temp: 20 }
   globalThis.__store.set('tempestCache', JSON.stringify({ stationId: '12345', fetchedAt: 1, view }))
   const data = await new Promise((resolve) => {
@@ -316,13 +316,94 @@ test('side service: TEST_CONNECTION reports a bad station without throwing', asy
   await loadSideService(async () => ({ status: 404, body: '{}' }))
   const data = await new Promise((resolve) => {
     globalThis.__sideOptions.onRequest(
-      { method: 'TEST_CONNECTION', params: { stationId: '99999' } },
+      { method: 'TEST_CONNECTION', params: { stationId: '99999', token: 'abc' } },
       (err, d) => resolve(d)
     )
   })
   assert.equal(data.ok, false)
   assert.equal(data.error, 'BAD_STATION')
   assert.ok(data.message.length > 0)
+})
+
+// --- token is required ------------------------------------------------------
+// swd.weatherflow.com answers every request without a token with HTTP 401
+// (verified with curl on 2026-11-24), so a station ID alone must lead to a
+// setup prompt, not to a request that is bound to fail.
+
+test('config: station ID alone is not ready; the token is required', async () => {
+  const c = await loadEsm('utils/constants.js')
+  const onlyId = c.normalizeConfig({ stationId: '12345' })
+  assert.equal(c.isConfigured(onlyId), true)
+  assert.equal(c.hasToken(onlyId), false)
+  assert.equal(c.isReady(onlyId), false)
+  assert.equal(c.hasToken(c.normalizeConfig({ stationId: '12345', token: '   ' })), false, 'whitespace is not a token')
+  assert.equal(c.isReady(c.normalizeConfig({ stationId: '12345', token: 'abc' })), true)
+  assert.equal(c.isReady(c.normalizeConfig({ token: 'abc' })), false)
+})
+
+test('side service: station ID only gives a NO_TOKEN setup prompt and makes no request', async () => {
+  let called = false
+  await loadSideService(async () => {
+    called = true
+    return { status: 401, body: '{"status":{"status_code":401,"status_message":"UNAUTHORIZED"}}' }
+  })
+  globalThis.__store.set('tempestConfig', JSON.stringify({ stationId: '12345' }))
+  const data = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest({ method: 'GET_WEATHER', params: { force: true } }, (err, d) => resolve(d))
+  })
+  assert.equal(data.ok, false)
+  assert.equal(data.error, 'NO_TOKEN')
+  assert.match(data.message, /token/i)
+  assert.equal(called, false, 'no request without a token')
+})
+
+test('side service: TEST_CONNECTION with station ID only asks for the token', async () => {
+  let called = false
+  await loadSideService(async () => {
+    called = true
+    return { status: 401, body: '{}' }
+  })
+  const data = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest({ method: 'TEST_CONNECTION', params: { stationId: '12345' } }, (err, d) => resolve(d))
+  })
+  assert.equal(data.ok, false)
+  assert.equal(data.error, 'NO_TOKEN')
+  assert.equal(called, false)
+})
+
+test('side service: missing station ID gives the NO_STATION setup prompt even with a token', async () => {
+  let called = false
+  await loadSideService(async () => {
+    called = true
+    return { status: 200, body: JSON.stringify(SAMPLE) }
+  })
+  globalThis.__store.set('tempestConfig', JSON.stringify({ stationId: '', token: 'abc' }))
+  const data = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest({ method: 'GET_WEATHER', params: { force: true } }, (err, d) => resolve(d))
+  })
+  assert.equal(data.ok, false)
+  assert.equal(data.error, 'NO_STATION')
+  assert.equal(called, false)
+  const t = await new Promise((resolve) => {
+    globalThis.__sideOptions.onRequest({ method: 'TEST_CONNECTION', params: { token: 'abc' } }, (err, d) => resolve(d))
+  })
+  assert.equal(t.error, 'NO_STATION')
+})
+
+test('watch page and settings: setup prompts for both fields, token never called optional', () => {
+  const page = fs.readFileSync(path.join(ROOT, 'page/index.js'), 'utf8')
+  assert.ok(page.includes('ERR.NO_STATION'), 'watch prompts for the station ID')
+  assert.ok(page.includes('ERR.NO_TOKEN'), 'watch prompts for the token')
+  assert.match(page, /No station set\./)
+  assert.match(page, /No access token set\./)
+  const settings = fs.readFileSync(path.join(ROOT, 'setting/index.js'), 'utf8')
+  assert.ok(settings.includes("gettext('enterTokenFirst')"), 'settings check refuses to run without a token')
+  for (const f of ['setting/i18n/en-US.po', 'README.md', 'docs/INSTALL.md', 'utils/constants.js']) {
+    const src = fs.readFileSync(path.join(ROOT, f), 'utf8')
+    assert.ok(!/token[^\n]{0,40}optional|optional[^\n]{0,40}token/i.test(src), f + ' still calls the token optional')
+  }
+  const po = fs.readFileSync(path.join(ROOT, 'setting/i18n/en-US.po'), 'utf8')
+  for (const id of ['token', 'enterTokenFirst', 'tokenMissing']) assert.ok(po.includes('msgid "' + id + '"'), id + ' has a string')
 })
 
 test('settings page: the button asks the side service, it does not fetch itself', () => {

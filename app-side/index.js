@@ -6,6 +6,7 @@ import {
   ERR,
   SETTINGS_KEY,
   extractStationId,
+  hasToken,
   isConfigured,
   normalizeConfig
 } from '../utils/constants'
@@ -41,10 +42,9 @@ function writeCache(payload) {
 
 function buildUrl(cfg) {
   const id = encodeURIComponent(extractStationId(cfg.stationId))
-  // WeatherFlow accepts either ?token=... or a Bearer header; use the query
-  // form because it is what their own examples show.
-  const token = cfg.token ? '?token=' + encodeURIComponent(cfg.token) : ''
-  return API_HOST + id + token
+  // WeatherFlow requires a token on every request; it accepts ?token=... or a
+  // Bearer header. Use the query form because it is what their own examples show.
+  return API_HOST + id + '?token=' + encodeURIComponent(cfg.token)
 }
 
 // One call to Tempest, mapped to { ok: true, payload } or { ok: false, error, message }.
@@ -68,7 +68,7 @@ function fetchObservation(cfg) {
         }
       }
       if (status === 401 || status === 403) {
-        return { ok: false, error: ERR.AUTH, message: 'Token rejected by Tempest' }
+        return { ok: false, error: ERR.AUTH, message: 'Tempest rejected the access token' }
       }
       if (status === 404) {
         return { ok: false, error: ERR.BAD_STATION, message: 'Station ' + cfg.stationId + ' not found' }
@@ -107,6 +107,15 @@ function getWeather(res, force) {
       ok: false,
       error: ERR.NO_STATION,
       message: 'Set your Tempest station ID in the Zepp app',
+      config: cfg
+    })
+    return
+  }
+  if (!hasToken(cfg)) {
+    res(null, {
+      ok: false,
+      error: ERR.NO_TOKEN,
+      message: 'Set your Tempest access token in the Zepp app',
       config: cfg
     })
     return
@@ -150,7 +159,15 @@ function testConnection(res, params) {
     token: params && params.token
   })
   if (!isConfigured(cfg)) {
-    res(null, { ok: false, message: 'Enter a station ID first.' })
+    res(null, { ok: false, error: ERR.NO_STATION, message: 'Enter a station ID first.' })
+    return
+  }
+  if (!hasToken(cfg)) {
+    res(null, {
+      ok: false,
+      error: ERR.NO_TOKEN,
+      message: 'Enter your personal access token. Tempest needs it for every request.'
+    })
     return
   }
   fetchObservation(cfg).then(function (result) {
