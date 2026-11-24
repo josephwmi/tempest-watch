@@ -88,7 +88,7 @@ The short version: turn on developer mode (seven taps on the Zepp logo), put the
 ```bash
 npm install
 npm test          # 24 tests: mapping, side service, settings page, layout on every screen size
-npx zeus build    # writes dist/1137328-Tempest-2.1.0-<timestamp>.zab
+npx zeus build    # writes dist/1138029-Tempest-2.1.0-<timestamp>.zab
 ```
 
 Install on the watch, either way:
@@ -129,7 +129,7 @@ The release file keeps its old name, `tempest-watch-balance2.zab`, so existing l
   the conversion itself.
 - The observation endpoint has no sky-condition text ("partly cloudy"), so the
   one-line condition at the top is derived from rain, lightning, solar and UV.
-- App ID `1137328` is the app ID registered in the Zepp developer console; the package,
+- App ID `1138029` is the app ID registered in the Zepp developer console; the package,
   the console entry and this README must always agree. Change it in one place
   only — `app.json` — and rebuild.
 - This is a personal-use client. WeatherFlow's remote data access policy expects
