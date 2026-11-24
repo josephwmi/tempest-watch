@@ -87,9 +87,16 @@ The short version: turn on developer mode (seven taps on the Zepp logo), put the
 
 ```bash
 npm install
-npm test          # 24 tests: mapping, side service, settings page, layout on every screen size
+npm test          # 25 tests: mapping, side service, settings page, layout on every screen size, icons
 npx zeus build    # writes dist/1137328-Tempest-2.1.0-<timestamp>.zab
 ```
+
+App icon: a sun and a cloud on Tempest purple (#512B59), clipped to a circle with a
+transparent outside. The artwork is `assets-src/icon-source.png`;
+`python3 scripts/make-icon.py` (needs Pillow) writes the same icon as `icon.png`
+(240 x 240) and `icon-256.png` (256 x 256, the one `app.json` names) into both
+`assets/default.r` and `assets/default.s`, so every device package in the `.zab`
+carries the same icon. It also refreshes `docs/icon-preview.png`.
 
 Install on the watch, either way:
 
