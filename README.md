@@ -11,9 +11,9 @@ gust, pressure and trend, UV, solar, rain today and lightning.
 - Watch UI: `page/index.js` (Zepp OS API_LEVEL 3.0+, `@zos/ui`) — runs on round and square Zepp OS watches; the layout comes from `page/metrics.js` and scales to the real screen size
 - Phone side service: `app-side/index.js` — all HTTP happens here, because the
   watch itself has no internet
-- Settings page: `setting/index.js` — where you enter the station ID
+- Settings page: `setting/index.js` — where you enter the station ID and access token
 - Mapping and unit conversion: `utils/format.js` (pure JS, unit tested)
-- Tests: `npm test` (24 tests, no watch needed)
+- Tests: `npm test` (30 tests, no watch needed)
 
 ## How it works
 
@@ -46,9 +46,13 @@ which one you are on.
 | 3 Air | humidity | dew point, pressure + trend |
 | 4 Sun & rain | UV index | rain today, lightning in the last hour or solar |
 
-![watch mockup](docs/watch-mockup.png)
+| Round watch | Square watch |
+|:---:|:---:|
+| <img src="docs/screenshots/screenshot-round-360.png" width="240" alt="Tempest temperature page on a round watch"> | <img src="docs/screenshots/screenshot-square-360.png" width="240" alt="Tempest temperature page on a square watch"> |
 
-*(Layout sketch of page 1 — the real app draws these with the watch's own fonts.)*
+*(Page 1 with sample data, rendered at 360 x 360 from the app's own layout
+(`page/metrics.js`) by `python3 scripts/make-screenshots.py`. The watch draws the
+text in its own font.)*
 
 ## Install in one tap on the watch
 
