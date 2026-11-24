@@ -7,8 +7,9 @@ export const CACHE_KEY = 'tempestCache'
 export const PENDING_KEY = 'tempestPendingTest'
 
 // Personal Access Token from tempestwx.com -> Settings -> Data Authorizations.
-// Optional: it is only needed if you prefer "stations/<token>" lookups; the
-// plain station-id endpoint works with a station id alone.
+// Required: swd.weatherflow.com answers every request without a token with
+// HTTP 401 {"status_code":401,"status_message":"UNAUTHORIZED"} (checked
+// 2026-11-24), so the app needs both the station ID and the token.
 export const DEFAULT_CONFIG = {
   stationId: '',
   token: '',
@@ -21,6 +22,7 @@ export const API_HOST = 'https://swd.weatherflow.com/swd/rest/observations/stati
 // `message` is what we show; `status` is what the app uses.
 export const ERR = {
   NO_STATION: 'NO_STATION',
+  NO_TOKEN: 'NO_TOKEN',
   BAD_STATION: 'BAD_STATION',
   AUTH: 'AUTH',
   HTTP: 'HTTP',
@@ -37,8 +39,20 @@ export function normalizeConfig(raw) {
   return cfg
 }
 
+// A station ID is set (digits only).
 export function isConfigured(cfg) {
   return !!(cfg && /^\d+$/.test(cfg.stationId))
+}
+
+// A token is set. Tempest rejects requests without one, so nothing is fetched
+// until this is true.
+export function hasToken(cfg) {
+  return !!(cfg && typeof cfg.token === 'string' && cfg.token.trim().length > 0)
+}
+
+// Both pieces Tempest needs are present.
+export function isReady(cfg) {
+  return isConfigured(cfg) && hasToken(cfg)
 }
 
 // Accepts a bare id, a URL containing the id, or a JSON blob pasted by mistake.

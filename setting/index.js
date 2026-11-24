@@ -4,6 +4,7 @@ import {
   PENDING_KEY,
   SETTINGS_KEY,
   extractStationId,
+  hasToken,
   isConfigured,
   normalizeConfig
 } from '../utils/constants'
@@ -50,9 +51,9 @@ function render(page) {
   const cfg = page.state.cfg
   const testLine = page.state.testResult
 
-  const savedLine = isConfigured(cfg)
-    ? gettext('savedStation') + ' ' + cfg.stationId
-    : gettext('notSetYet')
+  const savedLine = !isConfigured(cfg)
+    ? gettext('notSetYet')
+    : gettext('savedStation') + ' ' + cfg.stationId + (hasToken(cfg) ? '' : ' ' + gettext('tokenMissing'))
 
   return View({ style: { padding: '16px', backgroundColor: '#f5f7fa' } }, [
     View({ style: card }, [
@@ -74,7 +75,7 @@ function render(page) {
       ]),
       View({ style: { marginTop: '8px' } }, [
         TextInput({
-          label: gettext('tokenOptional'),
+          label: gettext('token'),
           value: cfg.token,
           subStyle: { color: '#1a1a1a', fontSize: '15px' },
           onChange: (val) => {
@@ -82,6 +83,7 @@ function render(page) {
               Object.assign({}, page.state.cfg, { token: String(val || '').trim() })
             )
             storeCfg(props, page.state.cfg)
+            page.rerender()
           }
         })
       ]),
@@ -156,6 +158,12 @@ AppSettingsPage({
     const cfg = this.state.cfg
     if (!isConfigured(cfg)) {
       this.state.testResult = gettext('enterIdFirst')
+      this.rerender()
+      return
+    }
+    if (!hasToken(cfg)) {
+      this.state.testOk = false
+      this.state.testResult = gettext('enterTokenFirst')
       this.rerender()
       return
     }
