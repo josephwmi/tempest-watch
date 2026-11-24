@@ -9,7 +9,7 @@ change to the file's contents has fixed it. These routes skip the scanner entire
 
 Zeus CLI can push straight to a bridged watch. Nothing is hosted, nothing is scanned.
 
-1. **Bridge the watch.** In the Zepp app: Profile › your Balance 2 › Developer Mode,
+1. **Bridge the watch.** In the Zepp app: Profile › your watch › Developer Mode,
    then connect the watch to the developer tools. With the watch on the same desk as
    the computer, run:
 
@@ -40,7 +40,7 @@ Zeus CLI can push straight to a bridged watch. Nothing is hosted, nothing is sca
    For the finished bundle instead of a dev preview:
 
    ```bash
-   npx zeus install --path dist/tempest-watch-balance2.zab --target "Amazfit Balance 2"
+   npx zeus install --path dist/tempest-watch-balance2.zab --target "<your watch, e.g. Amazfit Balance 2>"
    ```
 
 ---
