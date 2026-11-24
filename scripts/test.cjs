@@ -523,6 +523,20 @@ test('app.json: targets round and square screens at API_LEVEL 3.0+', () => {
   assert.equal(app.runtime.apiVersion.minVersion, '3.0')
 })
 
+test('icons: same RGBA artwork at 240 and 256 px in every asset folder', () => {
+  const app = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
+  const ihdr = (buf) => ({ w: buf.readUInt32BE(16), h: buf.readUInt32BE(20), colorType: buf[25] })
+  for (const [name, size] of [['icon.png', 240], [app.app.icon, 256]]) {
+    const files = Object.keys(app.targets).flatMap((t) =>
+      app.targets[t].platforms.map((p) => fs.readFileSync(path.join(ROOT, 'assets', `${t}.${p.st}`, name)))
+    )
+    for (const buf of files) {
+      assert.deepEqual(ihdr(buf), { w: size, h: size, colorType: 6 }, `${name} is ${size}x${size} RGBA`)
+      assert.ok(buf.equals(files[0]), `${name} is identical in every asset folder`)
+    }
+  }
+})
+
 // --- settings check relayed through storage ------------------------------
 // The settings page cannot always reach the side service, so the request is
 // parked in settings storage and collected when the watch app opens.
