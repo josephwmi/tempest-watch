@@ -24,6 +24,10 @@ const COLOR_BTN = 0x1b2430
 
 const PAGES = 5
 
+// Support screen text. Plain single-quoted string, so '$JosephWMI' is literal
+// (no template-literal interpolation).
+const SUPPORT_TEXT = 'Thanks for downloading this app! To donate: CashApp: $JosephWMI'
+
 function label(opts) {
   return hmUI.createWidget(hmUI.widget.TEXT, Object.assign({
     color: COLOR_TEXT,
@@ -341,17 +345,9 @@ Page(
     paintSupport() {
       const w = this.state.widgets
       if (!w.supTitle) return
-      setText(w.supTitle, 'Thank you')
-      setText(
-        w.supBody,
-        [
-          'Tempest is free, and it',
-          'will stay free.',
-          '',
-          'Nothing is locked:',
-          'every reading is yours.'
-        ].join('\n')
-      )
+      // The screen shows exactly SUPPORT_TEXT and nothing else, so the title stays empty.
+      setText(w.supTitle, '')
+      setText(w.supBody, SUPPORT_TEXT)
     },
 
     namesOnPage(name) {

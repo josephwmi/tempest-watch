@@ -331,6 +331,15 @@ test('settings page: the button asks the side service, it does not fetch itself'
   assert.ok(!/fetch\(/.test(src), 'no direct fetch in the settings page')
 })
 
+test('support screen: shows the exact donation text with a literal $JosephWMI', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'page/index.js'), 'utf8')
+  const m = src.match(/const SUPPORT_TEXT = '([^']*)'/)
+  assert.ok(m, 'SUPPORT_TEXT is a plain single-quoted string (no interpolation)')
+  assert.equal(m[1], 'Thanks for downloading this app! To donate: CashApp: $JosephWMI')
+  assert.ok(src.includes('setText(w.supBody, SUPPORT_TEXT)'), 'body shows SUPPORT_TEXT')
+  assert.ok(src.includes("setText(w.supTitle, '')"), 'no extra title text')
+})
+
 // --- settings check relayed through storage ------------------------------
 // The settings page cannot always reach the side service, so the request is
 // parked in settings storage and collected when the watch app opens.

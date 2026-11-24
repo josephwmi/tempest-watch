@@ -129,4 +129,4 @@ words, so the README can be checked instead of hoped for.
 
 ## Support screen
 
-The fifth screen is a static thank-you: Tempest is free, nothing is locked, and there is no payment code in the app. KiezelPay was removed in v2.0.0.
+The fifth screen is a static thank-you that reads exactly: "Thanks for downloading this app! To donate: CashApp: $JosephWMI". Nothing is locked and there is no payment code in the app. KiezelPay was removed in v2.0.0.
