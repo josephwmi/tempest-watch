@@ -1,7 +1,7 @@
 # Tempest for Zepp OS (Amazfit)
 
-[![version](https://img.shields.io/badge/version-2.0.0-0d7ea8)](#)
-[![release](https://img.shields.io/badge/release-v2.0.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
+[![version](https://img.shields.io/badge/version-2.1.0-0d7ea8)](#)
+[![release](https://img.shields.io/badge/release-v2.1.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
 [![platform](https://img.shields.io/badge/Zepp%20OS-API%203.0%2B%20round%20%26%20square-4dd0e1)](#)
 
 A watch app that shows live conditions from your own **WeatherFlow Tempest**
@@ -54,8 +54,8 @@ which one you are on.
 
 The package is published as a public GitHub release, so there is nothing to host:
 
-- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v2.0.0>
-- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v2.0.0/tempest-watch-balance2.zab>
+- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v2.1.0>
+- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v2.1.0/tempest-watch-balance2.zab>
 - QR: `docs/install-qr.png`
 
 Zepp app › Profile › your watch › Developer Mode › QR scanner, and scan that
@@ -88,7 +88,7 @@ The short version: turn on developer mode (seven taps on the Zepp logo), put the
 ```bash
 npm install
 npm test          # 24 tests: mapping, side service, settings page, layout on every screen size
-npx zeus build    # writes dist/1137328-Tempest-2.0.0-<timestamp>.zab
+npx zeus build    # writes dist/1137328-Tempest-2.1.0-<timestamp>.zab
 ```
 
 Install on the watch, either way:
@@ -120,7 +120,7 @@ How the layout adapts: `page/index.js` reads the real width, height and shape fr
 
 `npx zeus build` (Zeus CLI 1.10, run 2026-11-24) writes one `.zab` with 12 per-device packages: round 360, 416, 454, 466 and 480, and square 320 x 380, 390 x 450 and 432 x 514, each for the CPU platforms Zeus knows.
 
-The release file keeps its old name, `tempest-watch-balance2.zab`, so existing links and QR codes still work. The published v2.0.0 package was built for round screens only. Square watches need a package rebuilt from this code with `npx zeus build`; that one package contains both the round and the square build.
+The release file keeps its old name, `tempest-watch-balance2.zab`, so existing links and QR codes still work. The v2.0.0 package was built for round screens only. From v2.1.0 the package is built from this code with `npx zeus build`, and that one package contains both the round and the square build.
 
 ## Notes and limits
 
@@ -140,7 +140,7 @@ The release file keeps its old name, `tempest-watch-balance2.zab`, so existing l
 
 ## Version and release
 
-Current version: **2.0.0** (`app.version` in `app.json`).
+Current version: **2.1.0** (`app.version` in `app.json`).
 Latest release: <https://github.com/josephwmi/tempest-watch/releases/latest>
 
 When you cut a new version, bump `app.version.code` and `app.version.name` in

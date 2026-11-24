@@ -5,8 +5,8 @@
     "appName": "Tempest",
     "appType": "app",
     "version": {
-      "code": 13,
-      "name": "2.0.0"
+      "code": 14,
+      "name": "2.1.0"
     },
     "icon": "icon-256.png",
     "vender": "tempest-watch",
