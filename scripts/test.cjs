@@ -331,6 +331,117 @@ test('settings page: the button asks the side service, it does not fetch itself'
   assert.ok(!/fetch\(/.test(src), 'no direct fetch in the settings page')
 })
 
+test('support screen: shows the exact donation text with a literal $JosephWMI', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'page/index.js'), 'utf8')
+  const m = src.match(/const SUPPORT_TEXT = '([^']*)'/)
+  assert.ok(m, 'SUPPORT_TEXT is a plain single-quoted string (no interpolation)')
+  assert.equal(m[1], 'Thanks for downloading this app! To donate: CashApp: $JosephWMI')
+  assert.ok(src.includes('setText(w.supBody, SUPPORT_TEXT)'), 'body shows SUPPORT_TEXT')
+  assert.ok(src.includes("setText(w.supTitle, '')"), 'no extra title text')
+})
+
+// --- multi-device layout ---------------------------------------------------
+// Screen sizes of every Zepp OS watch with API_LEVEL >= 3.0, from
+// docs.zepp.com › Device Basic Information (checked 2026-11-24). Bip Max runs
+// in its 390 x 450 compatibility mode unless it gets its own target.
+const SCREENS = [
+  { name: 'round 480 (Balance 2/3/Ultra, T-Rex 3/Ultra 2, Cheetah Pro/2 Ultra, Active Max)', w: 480, h: 480, round: true },
+  { name: 'round 466 (Active 2, Active 3 Premium, GTR 4, Cheetah 2 Pro, T-Rex 3 Pro 44)', w: 466, h: 466, round: true },
+  { name: 'round 454 (Cheetah round, T-Rex Ultra)', w: 454, h: 454, round: true },
+  { name: 'round 416 (Falcon)', w: 416, h: 416, round: true },
+  { name: 'round 360 (Active Edge)', w: 360, h: 360, round: true },
+  { name: 'square 390x450 (Active, Active 2 square, Bip 6, GTS 4, Cheetah square, Bip Max compat)', w: 390, h: 450, round: false, corner: 86 },
+  { name: 'square 320x380 (Bip 5 Unity)', w: 320, h: 380, round: false, corner: 69 }
+]
+
+function insideCircle(r, s) {
+  const cx = s.w / 2
+  const cy = s.h / 2
+  const rad = s.w / 2
+  return [[r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]]
+    .every(([x, y]) => Math.hypot(x - cx, y - cy) <= rad)
+}
+
+// Square Zepp screens have rounded corners (the "Screen radius size" column).
+function insideRoundedRect(r, s) {
+  const k = s.corner
+  return [[r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]].every(([x, y]) => {
+    const cx = Math.min(Math.max(x, k), s.w - k)
+    const cy = Math.min(Math.max(y, k), s.h - k)
+    return Math.hypot(x - cx, y - cy) <= k
+  })
+}
+
+function insideScreen(r, s) {
+  return r.x >= 0 && r.y >= 0 && r.w > 0 && r.h > 0 && r.x + r.w <= s.w && r.y + r.h <= s.h
+}
+
+test('layout: every widget fits on every supported screen', async () => {
+  const { computeLayout, dotX } = await loadEsm('page/metrics.js')
+  for (const s of SCREENS) {
+    const L = computeLayout(s.w, s.h, s.round)
+    const rects = ['title', 'cond', 'temp', 'feels', 'big', 'mid', 'small', 'status', 'supTitle', 'supBody']
+      .map((n) => [n, L[n]])
+      .concat([['retry', L.retry], ['prev', L.buttons.prev], ['refresh', L.buttons.refresh], ['next', L.buttons.next]])
+    for (const [n, r] of rects) {
+      assert.ok(insideScreen(r, s), `${n} off screen on ${s.name}: ${JSON.stringify(r)}`)
+      assert.ok(Number.isInteger(r.x) && Number.isInteger(r.y) && Number.isInteger(r.w) && Number.isInteger(r.h), `${n} has whole pixels`)
+    }
+    const { prev, refresh, next } = L.buttons
+    assert.ok(prev.x + prev.w <= refresh.x && refresh.x + refresh.w <= next.x, `buttons overlap on ${s.name}`)
+    assert.ok(L.status.y + L.status.h <= L.retry.y, `status text runs into the retry button on ${s.name}`)
+    assert.ok(L.supBody.y + L.supBody.h <= prev.y, `support text runs into the buttons on ${s.name}`)
+    for (let i = 0; i < 5; i++) {
+      const d = { x: dotX(L, i, 5), y: L.dots.y, w: L.dots.size, h: L.dots.size }
+      assert.ok(insideScreen(d, s), `dot ${i} off screen on ${s.name}`)
+      if (s.round) assert.ok(insideCircle(d, s), `dot ${i} outside the round face on ${s.name}`)
+    }
+    if (s.round) {
+      // Buttons are what you tap: none of their corners may fall off the round face.
+      for (const [n, r] of [['retry', L.retry], ['prev', prev], ['refresh', refresh], ['next', next]]) {
+        assert.ok(insideCircle(r, s), `${n} is cut off by the round face on ${s.name}`)
+      }
+    } else {
+      for (const [n, r] of [['retry', L.retry], ['prev', prev], ['refresh', refresh], ['next', next]]) {
+        assert.ok(insideRoundedRect(r, s), `${n} is cut off by the screen corner on ${s.name}`)
+      }
+    }
+    assert.ok(L.temp.font >= 60 && L.buttons.font >= 18, `fonts too small on ${s.name}`)
+  }
+})
+
+test('layout: 480 round keeps the original Balance 2 rows', async () => {
+  const { computeLayout } = await loadEsm('page/metrics.js')
+  const L = computeLayout(480, 480, true)
+  assert.deepEqual([L.temp.y, L.temp.h, L.temp.font], [96, 120, 92])
+  assert.deepEqual([L.big.y, L.mid.y, L.small.y], [110, 186, 222])
+  assert.equal(L.buttons.prev.y, 296)
+})
+
+test('page: no hard-coded px() design values left in the watch page', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'page/index.js'), 'utf8')
+  assert.ok(!/\bpx\(/.test(src), 'positions come from computeLayout(), not px()')
+  assert.ok(src.includes('computeLayout(W, H, ROUND)'))
+  assert.match(src, /getDeviceInfo\(\)/)
+})
+
+test('app.json: targets round and square screens at API_LEVEL 3.0+', () => {
+  const app = JSON.parse(fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'))
+  assert.equal(app.configVersion, 'v3')
+  const targets = Object.keys(app.targets)
+  for (const t of targets) {
+    const shapes = app.targets[t].platforms.map((p) => p.st).sort()
+    assert.deepEqual(shapes, ['r', 's'], 'round and square platforms declared')
+    for (const st of shapes) {
+      assert.ok(fs.existsSync(path.join(ROOT, 'assets', t + '.' + st, 'icon.png')), `assets/${t}.${st}/icon.png exists`)
+    }
+    assert.equal(app.targets[t].platforms.find((p) => p.st === 's').dw, 390)
+    assert.equal(app.targets[t].platforms.find((p) => p.st === 'r').dw, 480)
+  }
+  // ZML (@zeppos/zml) needs API_LEVEL 3.0; anything higher drops older watches.
+  assert.equal(app.runtime.apiVersion.minVersion, '3.0')
+})
+
 // --- settings check relayed through storage ------------------------------
 // The settings page cannot always reach the side service, so the request is
 // parked in settings storage and collected when the watch app opens.

@@ -1,19 +1,23 @@
 import * as hmUI from '@zos/ui'
-import { px, log as Logger } from '@zos/utils'
+import { log as Logger } from '@zos/utils'
 import { BasePage } from '@zeppos/zml/base-page'
 import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from '@zos/device'
 
 import { ERR, isConfigured, normalizeConfig } from '../utils/constants'
 import { comfortLabel, conditionLabel } from '../utils/format'
 
-import { BTN_H, BTN_RADIUS, BTN_W, BTN_Y, BTN_FONT, RETRY_BTN, SUPPORT } from './metrics'
+import { computeLayout, dotX, RETRY_TEXT } from './metrics'
 
 const logger = Logger.getLogger('tempest-page')
 
-// Amazfit Balance 2: round 480 x 480 AMOLED. The design width in app.json is
-// 480 as well, so px() is 1:1 on this watch.
-const { width: W, height: H } = getDeviceInfo()
-const ROUND = getDeviceInfo().screenShape !== SCREEN_SHAPE_SQUARE
+// Real screen size and shape of whichever watch this runs on (round 360-480,
+// square 320 x 380 / 390 x 450). Every widget position comes from
+// computeLayout(), so nothing here is tied to one watch.
+const DEVICE = getDeviceInfo()
+const W = DEVICE.width
+const H = DEVICE.height
+const ROUND = DEVICE.screenShape !== SCREEN_SHAPE_SQUARE
+const L = computeLayout(W, H, ROUND)
 
 const COLOR_BG = 0x000000
 const COLOR_TEXT = 0xffffff
@@ -23,6 +27,10 @@ const COLOR_WARN = 0xffb74d
 const COLOR_BTN = 0x1b2430
 
 const PAGES = 5
+
+// Support screen text. Plain single-quoted string, so '$JosephWMI' is literal
+// (no template-literal interpolation).
+const SUPPORT_TEXT = 'Thanks for downloading this app! To donate: CashApp: $JosephWMI'
 
 function label(opts) {
   return hmUI.createWidget(hmUI.widget.TEXT, Object.assign({
@@ -39,15 +47,15 @@ function setText(widget, text) {
   widget.setProperty(hmUI.prop.TEXT, value)
 }
 
-function makeButton(text, x, y, w, h, onTap) {
+function makeButton(text, r, font, onTap) {
   return hmUI.createWidget(hmUI.widget.BUTTON, {
-    x: x,
-    y: y,
-    w: w,
-    h: h,
-    radius: h / 2,
+    x: r.x,
+    y: r.y,
+    w: r.w,
+    h: r.h,
+    radius: r.radius,
     text: text,
-    text_size: px(BTN_FONT),
+    text_size: font,
     color: COLOR_TEXT,
     normal_color: COLOR_BTN,
     press_color: COLOR_ACCENT,
@@ -112,82 +120,63 @@ Page(
       })
 
       const w = this.state.widgets
+      const text = (r, extra) => label(Object.assign({ x: r.x, y: r.y, w: r.w, h: r.h, text_size: r.font }, extra))
 
-      w.title = label({ x: px(40), y: px(38), w: W - px(80), h: px(34), text_size: px(22), color: COLOR_DIM })
-      w.cond = label({ x: px(40), y: px(70), w: W - px(80), h: px(30), text_size: px(22), color: COLOR_ACCENT })
+      w.title = text(L.title, { color: COLOR_DIM })
+      w.cond = text(L.cond, { color: COLOR_ACCENT })
 
       // Page 1: temperature
-      w.temp = label({ x: px(30), y: px(96), w: W - px(60), h: px(120), text_size: px(92) })
-      w.feels = label({ x: px(40), y: px(214), w: W - px(80), h: px(30), text_size: px(24), color: COLOR_DIM })
+      w.temp = text(L.temp)
+      w.feels = text(L.feels, { color: COLOR_DIM })
 
-      // Page 2: wind
-      w.wind = label({ x: px(30), y: px(110), w: W - px(60), h: px(80), text_size: px(62) })
-      w.windDir = label({ x: px(40), y: px(186), w: W - px(80), h: px(34), text_size: px(28), color: COLOR_ACCENT })
-      w.gust = label({ x: px(40), y: px(222), w: W - px(80), h: px(30), text_size: px(24), color: COLOR_DIM })
+      // Pages 2-4 share three rows: a big number, an accent line, a dim line.
+      w.wind = text(L.big)
+      w.windDir = text(L.mid, { color: COLOR_ACCENT })
+      w.gust = text(L.small, { color: COLOR_DIM })
 
-      // Page 3: air
-      w.hum = label({ x: px(30), y: px(110), w: W - px(60), h: px(80), text_size: px(62) })
-      w.dew = label({ x: px(40), y: px(186), w: W - px(80), h: px(34), text_size: px(28), color: COLOR_ACCENT })
-      w.press = label({ x: px(40), y: px(222), w: W - px(80), h: px(30), text_size: px(24), color: COLOR_DIM })
+      w.hum = text(L.big)
+      w.dew = text(L.mid, { color: COLOR_ACCENT })
+      w.press = text(L.small, { color: COLOR_DIM })
 
-      // Page 4: sun, rain, lightning
-      w.uv = label({ x: px(30), y: px(110), w: W - px(60), h: px(80), text_size: px(62) })
-      w.rain = label({ x: px(40), y: px(186), w: W - px(80), h: px(34), text_size: px(28), color: COLOR_ACCENT })
-      w.strike = label({ x: px(40), y: px(222), w: W - px(80), h: px(30), text_size: px(24), color: COLOR_DIM })
+      w.uv = text(L.big)
+      w.rain = text(L.mid, { color: COLOR_ACCENT })
+      w.strike = text(L.small, { color: COLOR_DIM })
 
       // Status block: shown when there is no reading to show.
-      w.status = label({
-        x: px(50),
-        y: px(96),
-        w: W - px(100),
-        h: px(170),
-        text_size: px(26),
-        color: COLOR_TEXT,
-        text_style: hmUI.text_style.WRAP
-      })
+      w.status = text(L.status, { color: COLOR_TEXT, text_style: hmUI.text_style.WRAP })
 
-      const bw = px(BTN_W)
-      const bh = px(BTN_H)
-      const by = px(BTN_Y)
-      w.prev = makeButton('<', px(30), by, bw, bh, () => this.turn(-1))
-      w.next = makeButton('>', W - px(30) - bw, by, bw, bh, () => this.turn(1))
-      w.refresh = makeButton('\u21bb', Math.floor((W - bw) / 2), by, bw, bh, () => this.load(true))
+      const B = L.buttons
+      w.prev = makeButton('<', B.prev, B.font, () => this.turn(-1))
+      w.refresh = makeButton('\u21bb', B.refresh, B.font, () => this.load(true))
+      w.next = makeButton('>', B.next, B.font, () => this.turn(1))
 
       // Page 5: support. A thank-you, nothing to buy and nothing gated.
-      w.supTitle = label({
-        x: px(40), y: px(SUPPORT.title_y), w: W - px(80), h: px(40),
-        text_size: px(SUPPORT.title_font), color: COLOR_TEXT
-      })
-      w.supBody = label({
-        x: px(50), y: px(SUPPORT.body_y), w: W - px(100), h: px(SUPPORT.body_h),
-        text_size: px(SUPPORT.body_font), color: COLOR_DIM, text_style: hmUI.text_style.WRAP
-      })
+      w.supTitle = text(L.supTitle, { color: COLOR_TEXT })
+      w.supBody = text(L.supBody, { color: COLOR_DIM, text_style: hmUI.text_style.WRAP })
+
       // Page dots
-      const dotY = px(BTN_Y + BTN_H + 26)
-      const gap = px(18)
-      const startX = Math.floor((W - (PAGES - 1) * gap) / 2)
       for (let i = 0; i < PAGES; i++) {
         this.state.dots.push(
           hmUI.createWidget(hmUI.widget.FILL_RECT, {
-            x: startX + i * gap - px(3),
-            y: dotY,
-            w: px(6),
-            h: px(6),
-            radius: px(3),
+            x: dotX(L, i, PAGES),
+            y: L.dots.y,
+            w: L.dots.size,
+            h: L.dots.size,
+            radius: Math.floor(L.dots.size / 2),
             color: i === 0 ? COLOR_ACCENT : COLOR_BTN
           })
         )
       }
 
-      // Full-width retry button for the error state.
+      // Wide retry button for the error state.
       w.retry = hmUI.createWidget(hmUI.widget.BUTTON, {
-        x: px(RETRY_BTN.x),
-        y: px(RETRY_BTN.y),
-        w: px(RETRY_BTN.w),
-        h: px(RETRY_BTN.h),
-        radius: px(RETRY_BTN.radius),
-        text: RETRY_BTN.text,
-        text_size: px(RETRY_BTN.font_size),
+        x: L.retry.x,
+        y: L.retry.y,
+        w: L.retry.w,
+        h: L.retry.h,
+        radius: L.retry.radius,
+        text: RETRY_TEXT,
+        text_size: L.retry.font,
         color: 0x000000,
         normal_color: COLOR_ACCENT,
         press_color: 0x26a69a,
@@ -198,10 +187,6 @@ Page(
       this.paintStatus()
       if (this.state.view) this.paintView()
       this.paintSupport()
-
-      if (ROUND) {
-        // nothing extra: layout is already centred for the round face
-      }
     },
 
     onCall(req) {
@@ -341,17 +326,9 @@ Page(
     paintSupport() {
       const w = this.state.widgets
       if (!w.supTitle) return
-      setText(w.supTitle, 'Thank you')
-      setText(
-        w.supBody,
-        [
-          'Tempest is free, and it',
-          'will stay free.',
-          '',
-          'Nothing is locked:',
-          'every reading is yours.'
-        ].join('\n')
-      )
+      // The screen shows exactly SUPPORT_TEXT and nothing else, so the title stays empty.
+      setText(w.supTitle, '')
+      setText(w.supBody, SUPPORT_TEXT)
     },
 
     namesOnPage(name) {

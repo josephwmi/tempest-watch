@@ -1,4 +1,6 @@
-# Installing Tempest on an Amazfit Balance 2
+# Installing Tempest on a Zepp OS watch
+
+Works on any round or square Amazfit watch with Zepp OS API_LEVEL 3.0 or higher (see *Supported watches* in the README). Wherever the steps below say "your watch", pick your own watch in the Zepp app.
 
 The watch can't open a file directly. It downloads the app from a web address,
 and the Zepp app starts that download when you scan a QR code. So there are three
@@ -14,7 +16,7 @@ the cable-free alternative.
 
 - The built package: `tempest-watch/dist/tempest-watch-balance2.zab`
   (~290 KB). Rebuild it any time with `npx zeus build`.
-- The Zepp app on your phone, paired to the Balance 2.
+- The Zepp app on your phone, paired to your watch.
 - A place to put that one file where the watch can fetch it (step 2).
 
 ---
@@ -26,7 +28,7 @@ the cable-free alternative.
 3. Tap **Settings** (or **About**, depending on your Zepp app version).
 4. Tap the **Zepp logo** at the top **seven times** in a row. A message confirms
    developer mode is on. (If you only see About, the same seven taps work there.)
-5. Back out to **Profile**, open **your watch** (the Balance 2 in the device list),
+5. Back out to **Profile**, open **your watch** (in the device list),
    and look for **Developer Mode** in the list. On some Zepp app versions it sits
    under the watch's own **Settings** instead; if the tap sequence leaves you with
    only About, that is the menu to use.
@@ -94,7 +96,7 @@ If your hosting gives you a link with query parameters or a share token, use the
 
 ## Step 4 — Scan it with the watch
 
-1. **Zepp app › Profile › your Balance 2 › Developer Mode**.
+1. **Zepp app › Profile › your watch › Developer Mode**.
 2. Tap the **QR scanner** icon at the top right.
 3. Point the phone at `docs/install-qr.png` (on screen, or printed — the image is
    640 px, plenty for a phone camera).
@@ -106,7 +108,7 @@ If your hosting gives you a link with query parameters or a share token, use the
 
 ## Step 5 — Set your station
 
-1. **Zepp app › Profile › your Balance 2 › App settings › Tempest**.
+1. **Zepp app › Profile › your watch › App settings › Tempest**.
 2. **Station ID** — the digits from tempestwx.com › Settings › Stations. (Pasting
    the whole station URL works too; the app pulls the number out.)
 3. **Token** — optional. Create one at tempestwx.com › Settings › Data

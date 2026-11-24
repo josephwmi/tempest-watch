@@ -1,19 +1,19 @@
 # Tempest for Zepp OS (Amazfit)
 
-[![version](https://img.shields.io/badge/version-2.0.0-0d7ea8)](#)
-[![release](https://img.shields.io/badge/release-v2.0.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
-[![platform](https://img.shields.io/badge/Amazfit%20Balance%202-Zepp%20OS%205-4dd0e1)](#)
+[![version](https://img.shields.io/badge/version-2.1.0-0d7ea8)](#)
+[![release](https://img.shields.io/badge/release-v2.1.0-2f6f4f)](https://github.com/josephwmi/tempest-watch/releases/latest)
+[![platform](https://img.shields.io/badge/Zepp%20OS-API%203.0%2B%20round%20%26%20square-4dd0e1)](#)
 
 A watch app that shows live conditions from your own **WeatherFlow Tempest**
 personal weather station: temperature, feels-like, humidity, dew point, wind and
 gust, pressure and trend, UV, solar, rain today and lightning.
 
-- Watch UI: `page/index.js` (Zepp OS 3.0+, `@zos/ui`) — tuned for the **Amazfit Balance 2** (round 480 x 480, AMOLED)
+- Watch UI: `page/index.js` (Zepp OS API_LEVEL 3.0+, `@zos/ui`) — runs on round and square Zepp OS watches; the layout comes from `page/metrics.js` and scales to the real screen size
 - Phone side service: `app-side/index.js` — all HTTP happens here, because the
   watch itself has no internet
 - Settings page: `setting/index.js` — where you enter the station ID
 - Mapping and unit conversion: `utils/format.js` (pure JS, unit tested)
-- Tests: `npm test` (14 tests, no watch needed)
+- Tests: `npm test` (24 tests, no watch needed)
 
 ## How it works
 
@@ -54,11 +54,11 @@ which one you are on.
 
 The package is published as a public GitHub release, so there is nothing to host:
 
-- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v2.0.0>
-- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v2.0.0/tempest-watch-balance2.zab>
+- Release: <https://github.com/josephwmi/tempest-watch/releases/tag/v2.1.0>
+- Package: <https://github.com/josephwmi/tempest-watch/releases/download/v2.1.0/tempest-watch-balance2.zab>
 - QR: `docs/install-qr.png`
 
-Zepp app › Profile › your Balance 2 › Developer Mode › QR scanner, and scan that
+Zepp app › Profile › your watch › Developer Mode › QR scanner, and scan that
 image. Full walkthrough: **[docs/INSTALL.md](docs/INSTALL.md)**.
 
 ## Install on the watch
@@ -87,8 +87,8 @@ The short version: turn on developer mode (seven taps on the Zepp logo), put the
 
 ```bash
 npm install
-npm test          # 14 tests over the mapping, side service and settings page
-npx zeus build    # writes dist/1137328-Tempest-2.0.0-<timestamp>.zab
+npm test          # 24 tests: mapping, side service, settings page, layout on every screen size
+npx zeus build    # writes dist/1137328-Tempest-2.1.0-<timestamp>.zab
 ```
 
 Install on the watch, either way:
@@ -99,7 +99,28 @@ Install on the watch, either way:
 - **Zeus CLI** with the watch bridged: `npx zeus preview` (or `zeus install` for the
   built `.zab`).
 
-Target: **Amazfit Balance 2** — round 480 x 480 AMOLED, Zepp OS 5.0, API level 4.2 (deviceSource 9568512 / 9568513 / 9568515). The build declares only the Balance 2 target and a 480 design width, so `px()` is 1:1 on that screen and Zeus writes a single bundle instead of seven. Minimum API level is 3.0, so other 3.x+ watches still run it if you add their target back.
+## Supported watches
+
+The build has one target (`default`) with two screen types (`app.json` › `targets.default.platforms`), and requires API_LEVEL 3.0 or higher (`runtime.apiVersion.minVersion`). 3.0 is the minimum for the ZML library the app is built on (`@zeppos/zml`).
+
+| Screen | Watches (from the [Zepp OS device list](https://docs.zepp.com/docs/reference/related-resources/device-list/)) | Assets |
+|---|---|---|
+| Round 480 x 480 | Balance 2, Balance 3, Balance Ultra, Balance, T-Rex 3, T-Rex 3 Pro 48 mm, T-Rex Ultra 2, Cheetah Pro, Cheetah 2 Ultra, Active Max | `assets/default.r` |
+| Round 466 x 466 | Active 2 (round), Active 3 Premium, GTR 4, Cheetah 2 Pro, T-Rex 3 Pro 44 mm | `assets/default.r` |
+| Round 454 x 454 | Cheetah (round), T-Rex Ultra | `assets/default.r` |
+| Round 416 x 416 | Falcon | `assets/default.r` |
+| Round 360 x 360 | Active Edge | `assets/default.r` |
+| Square 390 x 450 | Active, Active 2 (square), Bip 6, GTS 4, Cheetah (square) | `assets/default.s` |
+| Square 432 x 514 | Bip Max: runs in its 390 x 450 compatibility mode, centred on the screen | `assets/default.s` |
+| Square 320 x 380 | Bip 5 Unity | `assets/default.s` |
+
+These watches are **not** supported, because their firmware is below API_LEVEL 3.0 or has no API_LEVEL at all: Bip 5, GTR Mini, T-Rex 2, GTR 3 / GTR 3 Pro, GTS 3, GTS 4 mini and Band 7.
+
+How the layout adapts: `page/index.js` reads the real width, height and shape from `getDeviceInfo()`. `computeLayout()` in `page/metrics.js` then scales one reference design per shape to that size: 480 x 480 for round screens and 390 x 450 for square ones, which are Zepp's own design benchmarks. Positions follow the screen's width and height separately, and fonts scale by the smaller of the two. `npm test` checks the layout at every resolution in the table above: every widget must stay on screen, buttons must stay inside the round face or the square screen's rounded corners, and the buttons must not overlap. On a 480 round screen (Balance 2) the layout is the same as before, apart from narrower title margins and a wider gap between the three buttons, which previously overlapped.
+
+`npx zeus build` (Zeus CLI 1.10, run 2026-11-24) writes one `.zab` with 12 per-device packages: round 360, 416, 454, 466 and 480, and square 320 x 380, 390 x 450 and 432 x 514, each for the CPU platforms Zeus knows.
+
+The release file keeps its old name, `tempest-watch-balance2.zab`, so existing links and QR codes still work. The v2.0.0 package was built for round screens only. From v2.1.0 the package is built from this code with `npx zeus build`, and that one package contains both the round and the square build.
 
 ## Notes and limits
 
@@ -119,7 +140,7 @@ Target: **Amazfit Balance 2** — round 480 x 480 AMOLED, Zepp OS 5.0, API level
 
 ## Version and release
 
-Current version: **2.0.0** (`app.version` in `app.json`).
+Current version: **2.1.0** (`app.version` in `app.json`).
 Latest release: <https://github.com/josephwmi/tempest-watch/releases/latest>
 
 When you cut a new version, bump `app.version.code` and `app.version.name` in
@@ -129,4 +150,4 @@ words, so the README can be checked instead of hoped for.
 
 ## Support screen
 
-The fifth screen is a static thank-you: Tempest is free, nothing is locked, and there is no payment code in the app. KiezelPay was removed in v2.0.0.
+The fifth screen is a static thank-you that reads exactly: "Thanks for downloading this app! To donate: CashApp: $JosephWMI". Nothing is locked and there is no payment code in the app. KiezelPay was removed in v2.0.0.
