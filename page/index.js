@@ -2,9 +2,11 @@ import * as hmUI from '@zos/ui'
 import { px, log as Logger } from '@zos/utils'
 import { BasePage } from '@zeppos/zml/base-page'
 import { getDeviceInfo, SCREEN_SHAPE_SQUARE } from '@zos/device'
+import { onGesture, offGesture, GESTURE_LEFT, GESTURE_RIGHT } from '@zos/interaction'
 
 import { ERR, isConfigured, normalizeConfig } from '../utils/constants'
 import { comfortLabel, conditionLabel } from '../utils/format'
+import { PAGES, buttonTarget, swipeTarget } from '../utils/nav'
 
 import { BTN_H, BTN_RADIUS, BTN_W, BTN_Y, BTN_FONT, RETRY_BTN, SUPPORT } from './metrics'
 
@@ -22,7 +24,7 @@ const COLOR_ACCENT = 0x4dd0e1
 const COLOR_WARN = 0xffb74d
 const COLOR_BTN = 0x1b2430
 
-const PAGES = 5
+const SWIPE = { GESTURE_LEFT, GESTURE_RIGHT }
 
 function label(opts) {
   return hmUI.createWidget(hmUI.widget.TEXT, Object.assign({
@@ -67,7 +69,8 @@ Page(
       widgets: {},
       dots: [],
       errorShown: false,
-      stale: false
+      stale: false,
+      controlsVisible: false
     },
 
     onInit() {
@@ -196,12 +199,34 @@ Page(
 
       this.showPage(this.state.page)
       this.paintStatus()
+      this.registerSwipe()
       if (this.state.view) this.paintView()
       this.paintSupport()
 
       if (ROUND) {
         // nothing extra: layout is already centred for the round face
       }
+    },
+
+    // Left/right swipes page through the same five screens as < / >.
+    // onGesture (@zos/interaction, API_LEVEL 2.0+) allows one listener per app;
+    // returning true skips the system default, false keeps it.
+    registerSwipe() {
+      onGesture({ callback: (event) => this.onSwipe(event) })
+    },
+
+    onSwipe(event) {
+      // While the status / error block is up the page controls are hidden, so
+      // swipes are left to the system as well.
+      if (!this.state.controlsVisible) return false
+      const target = swipeTarget(this.state.page, event, SWIPE)
+      if (target === null) return false
+      this.showPage(target)
+      return true
+    },
+
+    onDestroy() {
+      offGesture()
     },
 
     onCall(req) {
@@ -331,6 +356,7 @@ Page(
       this.state.dots.forEach((d, i) => {
         d.setProperty(hmUI.prop.COLOR, i === this.state.page ? COLOR_ACCENT : COLOR_BTN)
       })
+      this.state.controlsVisible = pageVisible
       const controls = ['prev', 'next', 'refresh']
       controls.forEach((n) => {
         if (w[n]) w[n].setProperty(hmUI.prop.VISIBLE, pageVisible)
@@ -366,7 +392,7 @@ Page(
     },
 
     showPage(n) {
-      this.state.page = (n + PAGES) % PAGES
+      this.state.page = buttonTarget(n, 0)
       const w = this.state.widgets
       const names = ['temp', 'feels', 'wind', 'windDir', 'gust', 'hum', 'dew', 'press', 'uv', 'rain', 'strike', 'supTitle', 'supBody']
       names.forEach((name) => {
@@ -378,7 +404,7 @@ Page(
     },
 
     turn(dir) {
-      this.showPage(this.state.page + dir)
+      this.showPage(buttonTarget(this.state.page, dir))
     }
   })
 )

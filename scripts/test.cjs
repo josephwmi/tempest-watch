@@ -396,3 +396,134 @@ test('side service: every identifier it uses is imported', () => {
 
 // The settings page could sit on "Checking… now open Tempest" for ever when
 // neither the watch nor the side service answered. A timeout must end it.
+
+// --- screen navigation: buttons and swipes --------------------------------
+// The page module runs against stubbed @zos/* modules so the real gesture
+// callback can be driven from Node. This proves the wiring and the decisions
+// it makes; it says nothing about how the watch firmware delivers gestures.
+
+test('nav: buttons wrap, swipes stop at the ends', async () => {
+  const nav = await loadEsm('utils/nav.js')
+  const G = { GESTURE_LEFT: 3, GESTURE_RIGHT: 4 }
+  assert.equal(nav.PAGES, 5)
+  assert.equal(nav.buttonTarget(0, -1), 4)
+  assert.equal(nav.buttonTarget(4, 1), 0)
+  assert.equal(nav.buttonTarget(2, 1), 3)
+  for (let p = 0; p < 4; p++) assert.equal(nav.swipeTarget(p, G.GESTURE_LEFT, G), p + 1)
+  for (let p = 1; p < 5; p++) assert.equal(nav.swipeTarget(p, G.GESTURE_RIGHT, G), p - 1)
+  assert.equal(nav.swipeTarget(4, G.GESTURE_LEFT, G), null, 'no wrap past the last screen')
+  assert.equal(nav.swipeTarget(0, G.GESTURE_RIGHT, G), null, 'no wrap before the first screen')
+  assert.equal(nav.swipeTarget(2, 1, G), null, 'up/down are not handled')
+  assert.equal(nav.swipeTarget(2, undefined, G), null)
+  assert.equal(nav.swipeTarget(2, G.GESTURE_LEFT, null), null)
+})
+
+function loadWatchPage() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tempest-page-'))
+  const addExt = (src) => src.replace(/from '(\.\.?\/[^']+)'/g, (m, p) => "from '" + p + ".js'")
+  for (const sub of ['page', 'utils']) {
+    fs.mkdirSync(path.join(dir, sub), { recursive: true })
+    for (const f of fs.readdirSync(path.join(ROOT, sub))) {
+      if (!f.endsWith('.js')) continue
+      fs.writeFileSync(path.join(dir, sub, f), addExt(fs.readFileSync(path.join(ROOT, sub, f), 'utf8')))
+    }
+  }
+  const mod = (name, entry, body) => {
+    const d = path.join(dir, 'node_modules', ...name.split('/'))
+    fs.mkdirSync(d, { recursive: true })
+    const pkg = { name, type: 'module', main: 'index.js' }
+    if (entry) pkg.exports = { ['./' + entry]: './' + entry + '.js' }
+    fs.writeFileSync(path.join(d, 'package.json'), JSON.stringify(pkg))
+    fs.writeFileSync(path.join(d, (entry || 'index') + '.js'), body)
+  }
+  mod('@zos/ui', null,
+    'export const widget = { TEXT: "TEXT", BUTTON: "BUTTON", FILL_RECT: "FILL_RECT" }\n' +
+    'export const align = { CENTER_H: 0, CENTER_V: 0 }\n' +
+    'export const text_style = { NONE: 0, WRAP: 1 }\n' +
+    'export const prop = { TEXT: "text", VISIBLE: "visible", COLOR: "color" }\n' +
+    'export function createWidget(type, opts) { const w = { type, opts, props: {}, setProperty(k, v) { this.props[k] = v } }; globalThis.__widgets.push(w); return w }\n')
+  mod('@zos/utils', null, 'export const px = (v) => v\nexport const log = { getLogger: () => ({ log() {}, error() {}, debug() {} }) }\n')
+  mod('@zos/device', null, 'export const SCREEN_SHAPE_SQUARE = 0\nexport function getDeviceInfo() { return { width: 480, height: 480, screenShape: 1 } }\n')
+  mod('@zos/interaction', null,
+    'export const GESTURE_UP = 1, GESTURE_DOWN = 2, GESTURE_LEFT = 3, GESTURE_RIGHT = 4\n' +
+    'export function onGesture(o) { globalThis.__gesture.on.push(typeof o === "function" ? o : o.callback) }\n' +
+    'export function offGesture() { globalThis.__gesture.off++ }\n')
+  mod('@zeppos/zml', 'base-page', 'export function BasePage(o) { return o }\n')
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ type: 'module' }))
+  globalThis.__widgets = []
+  globalThis.__gesture = { on: [], off: 0 }
+  globalThis.Page = (o) => { globalThis.__pageOptions = o }
+  return import('file://' + path.join(dir, 'page', 'index.js').replace(/\\/g, '/')).then(() => {
+    // Fresh state per test: the options object is shared with the module.
+    const page = Object.assign({}, globalThis.__pageOptions)
+    page.state = JSON.parse(JSON.stringify(page.state))
+    page.state.widgets = {}
+    page.state.dots = []
+    page.request = () => new Promise(() => {})
+    return page
+  })
+}
+
+const READING = { ok: true, stationId: '1', temp: 20, tempUnit: 'C', feels: 20, feelsUnit: 'C', windCardinal: 'N', windDir: 0 }
+
+test('page: swipes move between the five screens, no wrap at the ends', async () => {
+  const page = await loadWatchPage()
+  page.build()
+  assert.equal(globalThis.__gesture.on.length, 1, 'one gesture listener registered in build()')
+  const swipe = globalThis.__gesture.on[0]
+  page.applyResult(READING) // a reading is showing, so the screen controls are up
+  assert.equal(page.state.controlsVisible, true)
+  const order = []
+  for (let i = 0; i < 4; i++) {
+    assert.equal(swipe(3), true, 'left swipe consumed')
+    order.push(page.state.page)
+  }
+  assert.deepEqual(order, [1, 2, 3, 4])
+  assert.equal(swipe(3), false, 'left swipe on the last screen is left to the system')
+  assert.equal(page.state.page, 4)
+  for (let i = 0; i < 4; i++) assert.equal(swipe(4), true, 'right swipe consumed')
+  assert.equal(page.state.page, 0)
+  assert.equal(swipe(4), false, 'right swipe on the first screen keeps the system back gesture')
+  assert.equal(page.state.page, 0)
+  assert.equal(swipe(1), false, 'up is not intercepted')
+  assert.equal(swipe(2), false, 'down is not intercepted')
+  // the active dot follows the swipe
+  swipe(3)
+  const dots = page.state.dots.map((d) => d.props.color)
+  assert.equal(dots.filter((c) => c === 0x4dd0e1).length, 1)
+  assert.equal(dots[1], 0x4dd0e1)
+})
+
+test('page: < / > buttons still work and still wrap', async () => {
+  const page = await loadWatchPage()
+  page.build()
+  page.applyResult(READING)
+  const w = page.state.widgets
+  assert.equal(typeof w.prev.opts.click_func, 'function')
+  assert.equal(typeof w.next.opts.click_func, 'function')
+  w.prev.opts.click_func()
+  assert.equal(page.state.page, 4, '< on the first screen wraps to Support')
+  w.next.opts.click_func()
+  assert.equal(page.state.page, 0, '> on Support wraps to Temperature')
+  w.next.opts.click_func()
+  assert.equal(page.state.page, 1)
+  // buttons and swipes share the same page state
+  assert.equal(globalThis.__gesture.on[0](4), true)
+  assert.equal(page.state.page, 0)
+})
+
+test('page: swipes are ignored while the status block hides the screens', async () => {
+  const page = await loadWatchPage()
+  page.build() // no reading yet: status text is shown, controls hidden
+  assert.equal(page.state.controlsVisible, false)
+  assert.equal(globalThis.__gesture.on[0](3), false)
+  assert.equal(page.state.page, 0)
+})
+
+test('page: the gesture listener is removed in onDestroy', async () => {
+  const page = await loadWatchPage()
+  page.build()
+  assert.equal(typeof page.onDestroy, 'function')
+  page.onDestroy()
+  assert.equal(globalThis.__gesture.off, 1)
+})
