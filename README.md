@@ -36,8 +36,16 @@ Watch app  ──request──▶  app-side (phone, in the Zepp app)
 
 ## Screens on the watch
 
-Swipe or tap `<` / `>` to page through four screens; the dots at the bottom show
-which one you are on.
+Swipe left/right or tap `<` / `>` to page through five screens; the dots at the
+bottom show which one you are on.
+
+- Swipe left for the next screen, right for the previous one. Swipes stop at the
+  ends: a right swipe on the first screen is left to the watch (its normal "back"
+  gesture), and so is a left swipe on Support. Up/down swipes are not touched.
+  Swipes are ignored while a status or error message is showing.
+- The `<` / `>` buttons work as before and wrap around (Temperature ↔ Support).
+- Swipes use `onGesture` / `offGesture` from `@zos/interaction` (API level 2.0+);
+  the listener is removed when the page is destroyed.
 
 | Page | Big number | Under it |
 |---|---|---|
@@ -45,6 +53,7 @@ which one you are on.
 | 2 Wind | average wind | direction (cardinal + degrees), gust |
 | 3 Air | humidity | dew point, pressure + trend |
 | 4 Sun & rain | UV index | rain today, lightning in the last hour or solar |
+| 5 Support | Thank you | static note: the app is free, nothing is locked |
 
 ![watch mockup](docs/watch-mockup.png)
 
